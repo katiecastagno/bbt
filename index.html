@@ -1,0 +1,639 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="BBT">
+<meta name="theme-color" content="#f5f4fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121220" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" id="appleIcon" href="apple-touch-icon.png">
+<script>
+(function () {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs><mask id="m"><rect width="512" height="512" fill="white"/><circle cx="410" cy="118" r="44" fill="black"/></mask></defs>
+<rect width="512" height="512" fill="#5a3fd1"/>
+<circle cx="385" cy="138" r="50" fill="#efe9ff" mask="url(#m)"/>
+<path d="M128 130Q128 150 148 150Q128 150 128 170Q128 150 108 150Q128 150 128 130Z" fill="#efe9ff"/>
+<path d="M392 316Q392 330 406 330Q392 330 392 344Q392 330 378 330Q392 330 392 316Z" fill="#c9bff5"/>
+<path d="M150 390Q150 400 160 400Q150 400 150 410Q150 400 140 400Q150 400 150 390Z" fill="#c9bff5"/>
+<rect x="211" y="86" width="90" height="290" rx="45" fill="#fff"/>
+<circle cx="256" cy="380" r="84" fill="#fff"/>
+<rect x="234" y="190" width="44" height="190" rx="22" fill="#8b6cf5"/>
+<circle cx="256" cy="380" r="64" fill="#8b6cf5"/>
+<g stroke="#c9bff5" stroke-width="5" stroke-linecap="round"><line x1="284" y1="120" x2="294" y2="120"/><line x1="284" y1="150" x2="294" y2="150"/><line x1="284" y1="180" x2="294" y2="180"/><line x1="284" y1="210" x2="294" y2="210"/></g>
+<circle cx="218" cy="394" r="10" fill="#c4b5fd"/><circle cx="294" cy="394" r="10" fill="#c4b5fd"/>
+<ellipse cx="233" cy="372" rx="8" ry="10" fill="#1f1640"/><ellipse cx="279" cy="372" rx="8" ry="10" fill="#1f1640"/>
+<circle cx="236" cy="368" r="3" fill="#fff"/><circle cx="282" cy="368" r="3" fill="#fff"/>
+<path d="M240 398Q256 412 272 398" fill="none" stroke="#1f1640" stroke-width="6" stroke-linecap="round"/>
+</svg>`;
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 180;
+    c.getContext('2d').drawImage(img, 0, 0, 180, 180);
+    try { document.getElementById('appleIcon').href = c.toDataURL('image/png'); } catch (e) {}
+  };
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+})();
+</script>
+<title>BBT</title>
+<script src="chart.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#f5f4fb;--card:#ffffff;--field:#eeedf8;--border:#d9d6ee;--text:#1f1d33;--muted:#68657f;--faint:rgba(104,101,127,.2);
+    --accent:#5a3fd1;--on-accent:#ffffff;--line:#4b34c4;--high:rgba(90,63,209,.09);--hi2:rgba(90,63,209,.22);--grid:rgba(0,0,0,.06);
+    --shift:#e08a00;--drop:#1f86c9;--jump:#2e9e6a
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#121220;--card:#1c1b2e;--field:#26253c;--border:#36345a;--text:#e9e8f7;--muted:#9c99b8;--faint:rgba(156,153,184,.2);
+      --accent:#8578f2;--on-accent:#12121f;--line:#9b8ff7;--high:rgba(133,120,242,.13);--hi2:rgba(133,120,242,.32);--grid:rgba(255,255,255,.06);
+      --shift:#f5a524;--drop:#5bb6f0;--jump:#4cc38a
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,system-ui,sans-serif;
+       padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 24px);max-width:720px;margin-inline:auto}
+  h1{font-size:20px;margin:4px 2px 12px;display:flex;justify-content:space-between;align-items:center}
+  h2{font-size:15px;color:var(--muted);font-weight:600;margin:0 0 10px}
+  .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(40,30,110,.08)}
+  .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+  input,select{font:inherit;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:10px;padding:10px;min-width:0}
+  #temp{flex:1;font-size:42px;font-weight:650;background:transparent;border:none;padding:0;outline:none}
+  #unitLbl{font-size:24px;color:var(--muted)}
+  #date,#time,#note{flex:1}
+  .check{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted);margin-top:10px}
+  .check input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
+  button{font:inherit;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--on-accent);font-weight:650}
+  button:disabled{opacity:.5}
+  #saveBtn{width:100%;margin-top:12px}
+  .icon{background:transparent;color:var(--muted);font-size:22px;padding:4px 8px}
+  .muted{color:var(--muted);font-size:14px;margin:8px 0 0}
+  #status{font-size:15px}
+  .seg{display:flex;gap:6px;margin-bottom:10px}
+  .seg button{background:var(--field);color:var(--muted);padding:6px 12px;font-size:14px;border-radius:999px}
+  .seg button.on{background:var(--accent);color:var(--on-accent)}
+  .chartbox{position:relative;height:300px}
+  .chartbox.sm{height:250px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 12px;font-size:13px;color:var(--muted);margin-top:10px}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .ring{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle;border:1.5px solid var(--muted)}
+  .sw{display:inline-block;width:14px;height:10px;background:var(--hi2);margin-right:5px;vertical-align:middle;border-radius:3px}
+  .sw.p{background:var(--high);border:1.5px dashed var(--accent)}
+  .bar{display:inline-block;width:16px;height:3px;background:var(--accent);margin-right:5px;vertical-align:middle;border-radius:2px}
+  .calnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  .calnav button{background:var(--field);color:var(--text);padding:6px 14px}
+  .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cal .dow{font-size:12px;color:var(--muted);text-align:center}
+  .cal .d{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;background:var(--field);border:1.5px solid transparent}
+  .cal .d.blank{background:transparent}
+  .cal .d.hi{background:var(--hi2)}
+  .cal .d.phi{background:var(--high);border:1.5px dashed var(--accent)}
+  .cal .d.miss{opacity:.45}
+  .cal .d.fut:not(.phi){opacity:.45}
+  .cal .d.today{border:1.5px solid var(--text)}
+  .mk{width:7px;height:7px;border-radius:50%;margin-top:2px}
+  .tbl{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:14px;white-space:nowrap}
+  th,td{padding:7px 6px;text-align:right;border-top:1px solid var(--border)}
+  th{color:var(--muted);font-weight:600;font-size:12px;border-top:0}
+  th:first-child,td:first-child{text-align:left}
+  tr.cur td{color:var(--accent);font-weight:600}
+  tr.typ td{color:var(--muted);font-style:italic}
+  dialog{background:var(--card);color:var(--text);border:none;border-radius:16px;width:min(92vw,420px)}
+  dialog::backdrop{background:rgba(20,10,40,.5)}
+  dialog label{display:block;font-size:14px;color:var(--muted);margin:12px 0 4px}
+  dialog input[type=text],dialog input[type=url],dialog select{width:100%}
+</style>
+</head>
+<body>
+  <h1>Basal temp <button class="icon" id="gear" aria-label="Settings">⚙︎</button></h1>
+
+  <section class="card">
+    <form id="entry" autocomplete="off">
+      <div class="row" style="margin-top:0"><input id="temp" type="number" inputmode="decimal" step="0.01" placeholder="97.40" required><span id="unitLbl">°F</span></div>
+      <div class="row"><input id="date" type="date"><input id="time" type="time"></div>
+      <div class="row"><input id="note" placeholder="Note (optional)"></div>
+      <label class="check"><input type="checkbox" id="off"> Off reading — leave it out of the analysis</label>
+      <button id="saveBtn" type="submit">Save</button>
+      <p id="hint" class="muted"></p>
+      <p id="msg" class="muted"></p>
+    </form>
+  </section>
+
+  <section class="card"><div id="status">Loading…</div></section>
+
+  <section class="card">
+    <div class="seg">
+      <button data-r="30">30d</button><button data-r="60">60d</button><button data-r="90">90d</button><button data-r="all">All</button>
+    </div>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <div class="legend">
+      <span><span class="bar"></span>3-day trend</span>
+      <span><span class="dot" style="background:var(--shift)"></span>Shift</span>
+      <span><span class="dot" style="background:var(--drop)"></span>Drop</span>
+      <span><span class="dot" style="background:var(--jump)"></span>Unusual change</span>
+      <span><span class="ring"></span>Off reading</span>
+      <span><span class="sw"></span>High phase</span>
+      <span>– – Coverline</span>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="calnav"><button id="calPrev" aria-label="Previous month">‹</button><b id="calTitle"></b><button id="calNext" aria-label="Next month">›</button></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend">
+      <span><span class="sw"></span>High phase</span>
+      <span><span class="sw p"></span>Predicted high</span>
+      <span><span class="dot" style="background:var(--shift)"></span>Shift</span>
+      <span><span class="dot" style="background:var(--drop)"></span>Drop</span>
+      <span><span class="ring"></span>Predicted</span>
+    </div>
+  </section>
+
+
+  <section class="card">
+    <h2>Cycle history</h2>
+    <div class="tbl"><table id="hist"></table></div>
+  </section>
+
+  <dialog id="settings">
+    <form method="dialog">
+      <h2>Settings</h2>
+      <label>Apps Script URL (ends in /exec)</label><input id="sUrl" type="url">
+      <label>Secret token</label><input id="sToken" type="text" autocapitalize="off" autocorrect="off" spellcheck="false">
+      <label>Unit</label><select id="sUnit"><option value="F">°F</option><option value="C">°C</option></select>
+      <label>Expected cycle length in days (optional — the app compares it with what it measures)</label><input id="sExpect" type="number" inputmode="numeric" min="15" max="60" placeholder="e.g. 28">
+      <label class="check"><input type="checkbox" id="sAdjust"> Adjust readings taken 1h+ off your usual wake time (0.1°F per hour)</label>
+      <button id="sSave" style="width:100%;margin-top:16px">Save</button>
+    </form>
+  </dialog>
+
+<script>
+const DEFAULT_URL = '';   // set your Apps Script URL in Settings; it stays on your phone only
+
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+};
+const getCfg = () => { const c = store.get('bbt_cfg', {}); return { ...c, url: c.url || DEFAULT_URL, unit: c.unit || 'F', adjust: !!c.adjust, expect: +c.expect || null }; };
+let rows = store.get('bbt_rows', []);
+let range = store.get('bbt_range', 60);
+let calMonth = null, chart, overlay, A = null;
+
+// ---------- helpers ----------
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const todayStr = () => ymd(new Date());
+const nowTime = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const parse = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parse(s); d.setDate(d.getDate() + n); return ymd(d); };
+const dayDiff = (a, b) => {
+  const [y1, m1, d1] = a.split('-').map(Number), [y2, m2, d2] = b.split('-').map(Number);
+  return Math.round((Date.UTC(y2, m2 - 1, d2) - Date.UTC(y1, m1 - 1, d1)) / 864e5);
+};
+const short = s => { const [, m, d] = s.split('-'); return `${+m}/${+d}`; };
+const long = s => parse(s).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+const median = a => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y), h = b.length >> 1;
+  return b.length % 2 ? b[h] : Math.round((b[h - 1] + b[h]) / 2); };
+const mean = a => a.length ? a.reduce((x, y) => x + y, 0) / a.length : null;
+const pct = (a, p) => { if (!a.length) return null; const b = [...a].sort((x, y) => x - y); return b[Math.floor(p * (b.length - 1))]; };
+const fmtT = t => t.toFixed(2);
+const mins = s => { if (!s || s === '00:00') return null; const [h, m] = s.split(':').map(Number); return h * 60 + m; };
+const hm = m => { m = Math.round(Math.abs(m)); const h = Math.floor(m / 60), r = m % 60; return ((h ? h + 'h ' : '') + (r ? r + 'm' : '')).trim(); };
+const fmtClock = m => new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+const isOff = r => /^x(\s|$)/i.test((r.note || '').trim());
+const cleanNote = n => (n || '').trim().replace(/^x(\s|$)/i, '').trim();
+const msg = t => { $('#msg').textContent = t; };
+
+// ---------- analysis ----------
+function analyze(cfg) {
+  const F = cfg.unit !== 'C', step = F ? 0.1 : 0.05, minRise = F ? 0.2 : 0.1, dropBelow = F ? 0.35 : 0.2;
+  const wakeList = rows.map(r => mins(r.time)).filter(m => m != null);
+  const wake = wakeList.length ? median(wakeList) : null;
+  const offBy = r => (wake == null || mins(r.time) == null) ? 0 : mins(r.time) - wake;
+
+  const V = rows.filter(r => !isOff(r)).map(r => {
+    let t = r.temp;
+    const h = offBy(r) / 60;
+    if (cfg.adjust && Math.abs(h) >= 1) t -= Math.max(-3, Math.min(3, h)) * step;
+    return { date: r.date, t };
+  });
+  const n = V.length, t = V.map(v => v.t), d = V.map(v => v.date);
+
+   // shifts: 3-over-6 with standard exceptions; drops: sustained fall to the coverline
+  const shifts = [], drops = [], highs = [];
+  let phase = 'low', cl = null, start = null;
+  const baseline = i => {
+    const b = t.slice(i - 6, i).sort((x, y) => y - x);
+    return b[0] - b[1] >= minRise ? b[1] : b[0];   // ignore one lone spike
+  };
+  for (let i = 6; i < n; i++) {
+    if (phase === 'low') {
+      if (i + 2 >= n) break;
+      if (dayDiff(d[i - 6], d[i]) > 21 || dayDiff(d[i], d[i + 2]) > 5) continue;
+      const c = baseline(i);
+      if (t[i] <= c) continue;
+      const a = t.slice(i, i + 4);
+      const strict = a[1] > c && a[2] >= c + minRise;
+      const fourth = a.length === 4 && a[1] > c && a[2] > c && a[3] > c;
+      const fallback = a.length === 4 && [a[1], a[2]].filter(v => v > c).length === 1 && a[3] >= c + minRise;
+      if (strict || fourth || fallback) {
+        phase = 'high'; cl = c; start = i;
+        shifts.push({ date: d[i], ov: d[i - 1], cl });
+        i += strict ? 2 : 3;
+      }
+    } else {
+      if (dayDiff(d[i - 1], d[i]) > 10) { highs.push({ from: d[start], to: d[i - 1], cl }); phase = 'low'; continue; }
+      const thr = Math.max(cl, mean(t.slice(start, i)) - dropBelow);   // end of high phase, relative to its own level
+      if (dayDiff(d[start], d[i]) < 7 || t[i] > thr) continue;
+      const next = t.slice(i + 1, i + 3);
+      if (!next.length) continue;
+      const sustained = next[0] <= thr || (next.length === 2 && mean([t[i], ...next]) <= thr + minRise / 2);
+      if (sustained) {
+        highs.push({ from: d[start], to: addDays(d[i], -1), cl });
+        drops.push({ date: d[i], len: dayDiff(d[start], d[i]) });
+        phase = 'low';
+      }
+    }
+  }
+  if (phase === 'high') highs.push({ from: d[start], to: d[n - 1], cl, open: true });
+  const curShift = phase === 'high' ? shifts[shifts.length - 1] : null;
+  if (n && dayDiff(d[n - 1], todayStr()) > 10) phase = 'stale';
+
+  // personal "unusual change" threshold
+  const diffs = [];
+  for (let i = 1; i < n; i++) if (dayDiff(d[i - 1], d[i]) === 1) diffs.push(Math.abs(t[i] - t[i - 1]));
+  const p95 = pct(diffs, 0.95);
+  const jumpThr = Math.max(F ? 0.3 : 0.15, Math.round((p95 == null ? (F ? 0.4 : 0.2) : p95) / 0.05) * 0.05);
+  const jumps = {};
+  for (let i = 1; i < n; i++) {
+    if (dayDiff(d[i - 1], d[i]) <= 2 && Math.abs(t[i] - t[i - 1]) >= jumpThr - 1e-9) jumps[d[i]] = t[i] > t[i - 1] ? 'jump' : 'dip';
+  }
+
+  // 3-reading smoothed trend
+  const trend = {};
+  for (let i = 0; i < n; i++) {
+    const w = [t[i]];
+    if (i > 0 && dayDiff(d[i - 1], d[i]) <= 2) w.push(t[i - 1]);
+    if (i < n - 1 && dayDiff(d[i], d[i + 1]) <= 2) w.push(t[i + 1]);
+    trend[d[i]] = mean(w);
+  }
+
+  // possible shift forming
+  let pending = 0;
+  if (phase === 'low') for (const k of [2, 1]) {
+    const s = n - k;
+    if (s < 6 || dayDiff(d[s - 6], d[n - 1]) > 12) continue;
+    const c = baseline(s);
+        if (t.slice(s).every(v => v > c)) { pending = k; break; }
+  }
+
+  // cycles (drop to drop)
+  const buildCycle = (startD, endD, open) => {
+    const sh = shifts.find(s => s.date > startD && s.date < endD);
+    const inC = V.filter(v => v.date >= startD && v.date < endD);
+    const lows = sh ? inC.filter(v => v.date < sh.date) : inC;
+    const his = sh ? inC.filter(v => v.date >= sh.date) : [];
+    const aL = mean(lows.map(v => v.t)), aH = mean(his.map(v => v.t));
+    return { start: startD, len: dayDiff(startD, endD), open,
+      shiftDay: sh ? dayDiff(startD, sh.date) + 1 : null,
+      highLen: sh ? dayDiff(sh.date, endD) : null,
+      avgLow: aL, avgHigh: aH, size: (aL != null && aH != null) ? aH - aL : null };
+  };
+  const cycles = [];
+  const gapIn = (a, b) => { for (let j = 1; j < n; j++) if (d[j] > a && d[j] <= b && dayDiff(d[j - 1], d[j]) > 10) return true; return false; };
+  for (let k = 1; k < drops.length; k++) if (!gapIn(drops[k - 1].date, drops[k].date)) cycles.push(buildCycle(drops[k - 1].date, drops[k].date, false));
+  if (drops.length && phase !== 'stale') cycles.push(buildCycle(drops[drops.length - 1].date, addDays(todayStr(), 1), true));
+
+  const done = cycles.filter(c => !c.open).slice(-6);
+  return {
+    V, wake, offBy, shifts, drops, highs, jumps, jumpThr, trend, pending, phase, curShift, cycles,
+    lastDrop: drops[drops.length - 1],
+    medCycle: median(done.map(c => c.len)),
+    medHigh: median(done.filter(c => c.highLen).map(c => c.highLen)),
+    medLow: median(done.filter(c => c.shiftDay).map(c => c.shiftDay - 1)),
+    avgRise: mean(done.filter(c => c.size != null).map(c => c.size))
+  };
+}
+
+function predict(A) {
+  const P = { shift: null, drop: null, hi: null }, today = todayStr();
+  if (A.phase === 'high' && A.medHigh) {
+    const drop = addDays(A.curShift.date, A.medHigh);
+    if (drop > today) { P.drop = drop; P.hi = { from: addDays(today, 1), to: addDays(drop, -1) }; }
+  } else if (A.phase === 'low' && A.lastDrop && A.medLow) {
+    const sh = addDays(A.lastDrop.date, A.medLow);
+    if (sh > today) {
+      P.shift = sh;
+      if (A.medHigh) { P.drop = addDays(sh, A.medHigh); P.hi = { from: sh, to: addDays(P.drop, -1) }; }
+    }
+  }
+  return P;
+}
+
+// ---------- rendering ----------
+function renderStatus(A, P) {
+  const el = $('#status');
+  if (A.V.length < 9) { el.textContent = 'Log at least 9 days to start detecting shifts.'; return; }
+  if (A.phase === 'stale') {
+    el.textContent = `No readings since ${long(A.V[A.V.length - 1].date)} — detection picks back up after a week or so of new readings.`;
+    return;
+  }
+  const today = todayStr(), p = [], last = rows[rows.length - 1];
+  if (A.phase === 'high') {
+    const s = A.curShift, day = dayDiff(s.date, today) + 1;
+    p.push(`<b>High phase</b> · day ${day} since the shift on ${long(s.date)} (ovulation ≈ ${long(s.ov)}).`);
+    if (P.drop) p.push(`Drop likely around <b>${long(P.drop)}</b>.`);
+    else if (A.medHigh && day > A.medHigh) p.push(`This high phase is running longer than your usual ~${A.medHigh} days.`);
+    if (A.V[A.V.length - 1].t <= s.cl) p.push(`Latest reading is at/below the coverline (${fmtT(s.cl)}°) — a drop may be starting.`);
+  } else {
+    const dr = A.lastDrop;
+    if (dr) {
+      const day = dayDiff(dr.date, today) + 1, expect = A.medLow != null ? A.medLow + 1 : null;
+      p.push(`<b>Low phase</b> · cycle day ${day} (drop on ${long(dr.date)}).`);
+      if (P.shift) p.push(`Shift likely around <b>${long(P.shift)}</b>.`);
+      if (!A.pending && day > (expect ? expect + 7 : 30)) {
+        p.push(`No clear shift detected yet${expect ? ` — you usually shift around cycle day ${expect}` : ''}.`);
+      }
+    } else p.push('<b>Low phase</b>.');
+    if (A.pending) p.push(`Last ${A.pending === 1 ? 'reading is' : '2 readings are'} above the prior 6 — possible shift forming (needs 3 to confirm).`);
+  }
+  if (last && last.date === today) {
+    if (isOff(last)) p.push(`<span class="muted">Today's reading is marked off and left out.</span>`);
+    else {
+      const o = A.offBy(last);
+      if (Math.abs(o) >= 60) p.push(`<span class="muted">Today's reading was ${hm(o)} ${o > 0 ? 'later' : 'earlier'} than your usual ${fmtClock(A.wake)}${getCfg().adjust ? ' (adjusted)' : ''}.</span>`);
+    }
+  }
+   if (A.medCycle) {
+    const exp = getCfg().expect, diff = exp ? A.medCycle - exp : null;
+    const vs = !exp ? '' : diff === 0 ? ` (right on the ${exp} you expected)` : ` (${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ${diff > 0 ? 'longer' : 'shorter'} than the ${exp} you expected)`;
+    p.push(`<span class="muted">Measured typical cycle: ${A.medCycle} days${vs} · unusual change for you: ±${fmtT(A.jumpThr)}°.</span>`);
+  }
+   el.innerHTML = p.join(' ');
+}
+
+function renderChart(A) {
+  const n = rows.length, len = range === 'all' ? n : Math.min(n, range), off = n - len;
+  const view = rows.slice(off);
+  const kind = { ...A.jumps };
+  A.shifts.forEach(s => kind[s.date] = 'shift');
+  A.drops.forEach(dd => kind[dd.date] = 'drop');
+  const col = { shift: css('--shift'), drop: css('--drop'), jump: css('--jump'), dip: css('--jump') };
+  const line = css('--line'), muted = css('--muted'), accent = css('--accent');
+  const offR = view.map(isOff);
+  const pc = view.map((r, k) => offR[k] ? 'transparent' : (col[kind[r.date]] || line));
+  const pb = view.map((r, k) => offR[k] ? muted : (col[kind[r.date]] || line));
+  const pr = view.map((r, k) => { const t = kind[r.date]; if (offR[k]) return 4;
+    return t === 'shift' || t === 'drop' ? 7 : t ? 5 : (len > 120 ? 0 : 2.5); });
+  const ps = view.map((r, k) => offR[k] ? 'circle' : (({ shift: 'triangle', drop: 'rectRot' })[kind[r.date]] || 'circle'));
+  const trend = view.map(r => A.trend[r.date] ?? null);
+  const cl = view.map(() => null), ranges = [];
+  const toK = (from, to) => {
+    const s = view.findIndex(r => r.date >= from);
+    let e = -1; for (let k = view.length - 1; k >= 0; k--) if (view[k].date <= to) { e = k; break; }
+    return (s < 0 || e < s) ? null : { s, e };
+  };
+  A.highs.forEach(h => { const r = toK(h.from, h.to); if (!r) return; ranges.push(r); for (let k = r.s; k <= r.e; k++) cl[k] = h.cl; });
+  const label = { shift: 'Thermal shift (ovulation ≈ day before)', drop: 'Drop (period-equivalent)', jump: 'Unusual rise for you', dip: 'Unusual dip for you' };
+
+  if (chart) chart.destroy();
+  chart = new Chart($('#chart'), {
+    type: 'line',
+    data: { labels: view.map(r => short(r.date)), datasets: [
+      { data: view.map(r => r.temp), borderColor: css('--faint'), borderWidth: 1, tension: .2, spanGaps: true,
+        pointBackgroundColor: pc, pointBorderColor: pb, pointBorderWidth: 1.5, pointRadius: pr, pointStyle: ps, pointHoverRadius: 7, order: 1 },
+      { data: trend, borderColor: accent, borderWidth: 3, tension: .35, pointRadius: 0, spanGaps: true, order: 2 },
+      { data: cl, borderColor: muted, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, spanGaps: false, order: 3 }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        shade: { ranges, color: css('--high') },
+        tooltip: {
+          filter: i => i.datasetIndex === 0,
+          callbacks: {
+            title: it => { const r = view[it[0].dataIndex]; const m = mins(r.time); return long(r.date) + (m != null ? ' · ' + fmtClock(m) : ''); },
+            label: i => `${fmtT(i.parsed.y)}°`,
+            afterLabel: i => {
+              const r = view[i.dataIndex], out = [];
+              if (isOff(r)) out.push('Off reading — left out');
+              else {
+                if (label[kind[r.date]]) out.push(label[kind[r.date]]);
+                const o = A.offBy(r);
+                if (Math.abs(o) >= 60) out.push(`Taken ${hm(o)} ${o > 0 ? 'late' : 'early'}`);
+              }
+              const nt = cleanNote(r.note); if (nt) out.push(nt);
+              return out;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: muted, maxRotation: 0, autoSkip: true, maxTicksLimit: 7 }, grid: { display: false } },
+        y: { ticks: { color: muted }, grid: { color: css('--grid') } }
+      }
+    },
+    plugins: [shadePlugin]
+  });
+}
+
+const shadePlugin = {
+  id: 'shade',
+  beforeDatasetsDraw(chart, _a, opts) {
+    const { ctx, chartArea: a, scales: { x } } = chart, n = chart.data.labels.length;
+    if (!opts.ranges || !n) return;
+    const step = n > 1 ? x.getPixelForValue(1) - x.getPixelForValue(0) : a.width;
+    ctx.save(); ctx.fillStyle = opts.color;
+    for (const r of opts.ranges) {
+      const x1 = Math.max(a.left, x.getPixelForValue(r.s) - step / 2);
+      const x2 = Math.min(a.right, x.getPixelForValue(r.e) + step / 2);
+      ctx.fillRect(x1, a.top, x2 - x1, a.bottom - a.top);
+    }
+    ctx.restore();
+  }
+};
+
+function renderCalendar(A, P) {
+  const today = todayStr();
+  if (!calMonth) calMonth = today.slice(0, 7);
+  const [y, m] = calMonth.split('-').map(Number);
+  $('#calTitle').textContent = new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const startDow = new Date(y, m - 1, 1).getDay(), days = new Date(y, m, 0).getDate();
+  const have = new Set(rows.map(r => r.date)), offs = new Set(rows.filter(isOff).map(r => r.date));
+  const mark = {}; A.shifts.forEach(s => mark[s.date] = 'shift'); A.drops.forEach(dd => mark[dd.date] = 'drop');
+  const firstDate = rows.length ? rows[0].date : today;
+  let html = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => `<div class="dow">${x}</div>`).join('');
+  for (let i = 0; i < startDow; i++) html += '<div class="d blank"></div>';
+  for (let dn = 1; dn <= days; dn++) {
+    const ds = `${y}-${pad(m)}-${pad(dn)}`, cls = ['d'];
+    let mk = '';
+    if (ds > today) {
+      cls.push('fut');
+      if (P.hi && ds >= P.hi.from && ds <= P.hi.to) cls.push('phi');
+      if (ds === P.shift) mk = '<span class="mk" style="border:1.5px solid var(--shift)"></span>';
+      if (ds === P.drop) mk = '<span class="mk" style="border:1.5px solid var(--drop)"></span>';
+    } else {
+      if (A.highs.some(h => ds >= h.from && ds <= h.to)) cls.push('hi');
+      if ((ds >= firstDate && !have.has(ds)) || offs.has(ds)) cls.push('miss');
+      if (mark[ds]) mk = `<span class="mk" style="background:var(--${mark[ds]})"></span>`;
+      if (ds === today) cls.push('today');
+    }
+    html += `<div class="${cls.join(' ')}"><span>${dn}</span>${mk}</div>`;
+  }
+  $('#cal').innerHTML = html;
+}
+
+function renderOverlay(A) {
+  const cyc = A.cycles.slice(-6);
+  $('#overlayCard').style.display = cyc.length ? '' : 'none';
+  if (overlay) overlay.destroy();
+  if (!cyc.length) return;
+  const muted = css('--muted'), faint = css('--faint'), accent = css('--accent');
+  const ds = cyc.map((c, k) => {
+    const end = c.open ? '9999-12-31' : addDays(c.start, c.len);
+    const latest = k === cyc.length - 1;
+    return {
+      label: parse(c.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
+      data: A.V.filter(v => v.date >= c.start && v.date < end).map(v => ({ x: dayDiff(c.start, v.date) + 1, y: v.t })),
+      borderColor: latest ? accent : faint, borderWidth: latest ? 3 : 1.3,
+      pointRadius: latest ? 2.5 : 0, pointBackgroundColor: accent, tension: .3, order: latest ? 0 : 1
+    };
+  });
+  overlay = new Chart($('#overlay'), {
+    type: 'line',
+    data: { datasets: ds },
+    options: {
+      responsive: true, maintainAspectRatio: false, animation: false,
+      interaction: { mode: 'nearest', intersect: false },
+      plugins: { legend: { display: false },
+        tooltip: { callbacks: { title: it => `Cycle day ${it[0].parsed.x}`, label: i => `Started ${i.dataset.label}: ${fmtT(i.parsed.y)}°` } } },
+      scales: {
+        x: { type: 'linear', min: 1, ticks: { color: muted, stepSize: 7 }, grid: { color: css('--grid') } },
+        y: { ticks: { color: muted }, grid: { color: css('--grid') } }
+      }
+    }
+  });
+}
+
+function renderHistory(A) {
+  const f = v => v == null ? '–' : fmtT(v);
+  const head = '<tr><th>Started</th><th>Days</th><th>Shift day</th><th>High days</th><th>Rise</th><th>Avg low</th><th>Avg high</th></tr>';
+  const typ = A.medCycle ? `<tr class="typ"><td>Typical</td><td>${A.medCycle}</td><td>${A.medLow != null ? A.medLow + 1 : '–'}</td><td>${A.medHigh ?? '–'}</td><td>${A.avgRise != null ? '+' + fmtT(A.avgRise) : '–'}</td><td></td><td></td></tr>` : '';
+  const body = [...A.cycles].reverse().map(c => `<tr class="${c.open ? 'cur' : ''}">
+    <td>${parse(c.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}${c.open ? ' · now' : ''}</td>
+    <td>${c.len}</td><td>${c.shiftDay ?? '–'}</td><td>${c.highLen ?? '–'}</td>
+    <td>${c.size == null ? '–' : '+' + fmtT(c.size)}</td><td>${f(c.avgLow)}</td><td>${f(c.avgHigh)}</td></tr>`).join('');
+  $('#hist').innerHTML = head + typ + (body || '<tr><td colspan="7" class="muted">Needs at least one full cycle.</td></tr>');
+}
+
+function renderToday() {
+  const d = $('#date').value || todayStr(), ex = rows.find(r => r.date === d);
+  $('#hint').textContent = ex
+    ? `Logged ${fmtT(ex.temp)}° for ${d === todayStr() ? 'today' : long(d)}${isOff(ex) ? ' (marked off)' : ''} — saving again overwrites it.`
+    : (d === todayStr() ? 'Not logged yet today.' : '');
+}
+
+function render() {
+  renderToday();
+  if (!rows.length) { $('#status').textContent = 'No readings found — check the Apps Script.'; return; }
+  A = analyze(getCfg());
+  const P = predict(A);
+    renderStatus(A, P); renderChart(A); renderCalendar(A, P); renderHistory(A);
+}
+
+// ---------- data ----------
+async function load() {
+  const { url, token } = getCfg();
+  if (!url || !token || url.includes('YOUR-ID')) { openSettings(); return; }
+  try {
+    const res = await fetch(`${url}?token=${encodeURIComponent(token)}`);
+    const j = await res.json();
+    if (j.error) throw new Error(j.error);
+    const map = new Map(); j.rows.forEach(r => map.set(r.date, r));
+    rows = [...map.values()].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
+    store.set('bbt_rows', rows);
+    render();
+  } catch (e) { msg('Couldn’t load: ' + e.message); }
+}
+
+$('#entry').addEventListener('submit', async e => {
+  e.preventDefault();
+  const { url, token, unit } = getCfg();
+  const temp = parseFloat($('#temp').value), date = $('#date').value || todayStr(), time = $('#time').value || nowTime();
+  let note = $('#note').value.trim();
+  if ($('#off').checked) note = ('x ' + note).trim();
+  if (!isFinite(temp)) return;
+  const [lo, hi] = unit === 'C' ? [34.5, 39] : [94, 102];
+  if ((temp < lo || temp > hi) && !confirm(`${temp}° looks unusual — save anyway?`)) return;
+  const btn = $('#saveBtn'); btn.disabled = true; msg('Saving…');
+  try {
+    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ token, date, time, temp, note }) });
+    const j = await res.json();
+    if (!j.ok) throw new Error(j.error || 'save failed');
+    const ex = rows.find(r => r.date === date);
+    if (ex) { ex.temp = temp; ex.time = time; if (note) ex.note = note; }
+    else { rows.push({ date, time, temp, note }); rows.sort((a, b) => a.date < b.date ? -1 : 1); }
+    store.set('bbt_rows', rows);
+    $('#temp').value = ''; $('#note').value = ''; $('#off').checked = false; $('#temp').blur();
+    msg('Saved ✓'); render();
+  } catch (err) { msg('Couldn’t save: ' + err.message); }
+  finally { btn.disabled = false; }
+});
+
+// ---------- settings & init ----------
+function openSettings() {
+  const c = getCfg();
+  $('#sUrl').value = c.url.includes('YOUR-ID') ? '' : c.url;
+  $('#sToken').value = c.token || ''; $('#sUnit').value = c.unit; $('#sAdjust').checked = c.adjust; $('#sExpect').value = c.expect || '';
+  $('#settings').showModal();
+}
+const saveFields = () => store.set('bbt_cfg', {
+  url: $('#sUrl').value.trim(), token: $('#sToken').value.trim(), unit: $('#sUnit').value, adjust: $('#sAdjust').checked, expect: $('#sExpect').value.trim() });
+['sUrl', 'sToken'].forEach(id => $('#' + id).addEventListener('input', saveFields));
+['sUnit', 'sAdjust', 'sExpect'].forEach(id => $('#' + id).addEventListener('change', saveFields));
+$('#gear').addEventListener('click', openSettings);
+$('#sSave').addEventListener('click', () => { saveFields(); $('#unitLbl').textContent = '°' + getCfg().unit; load(); });
+
+const shiftMonth = k => {
+  const [y, m] = calMonth.split('-').map(Number), d = new Date(y, m - 1 + k, 1);
+  calMonth = `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+  if (A) renderCalendar(A, predict(A));
+};
+$('#calPrev').addEventListener('click', () => shiftMonth(-1));
+$('#calNext').addEventListener('click', () => shiftMonth(1));
+
+document.querySelectorAll('.seg button').forEach(b => {
+  b.classList.toggle('on', String(range) === b.dataset.r);
+  b.onclick = () => {
+    range = b.dataset.r === 'all' ? 'all' : +b.dataset.r;
+    store.set('bbt_range', range);
+    document.querySelectorAll('.seg button').forEach(x => x.classList.toggle('on', x === b));
+    render();
+  };
+});
+
+const setNow = () => { $('#date').value = todayStr(); $('#time').value = nowTime(); };
+$('#date').addEventListener('change', renderToday);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { setNow(); renderToday(); load(); } });
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
+
+setNow();
+$('#unitLbl').textContent = '°' + getCfg().unit;
+render();
+load();
+</script>
+</body>
+</html>

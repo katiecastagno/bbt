@@ -48,13 +48,13 @@
   :root{
     --bg:#f5f4fb;--card:#ffffff;--field:#eeedf8;--border:#d9d6ee;--text:#1f1d33;--muted:#68657f;--faint:rgba(104,101,127,.2);
     --accent:#5a3fd1;--on-accent:#ffffff;--line:#4b34c4;--high:rgba(90,63,209,.09);--hi2:rgba(90,63,209,.22);--grid:rgba(0,0,0,.06);
-    --shift:#e08a00;--drop:#1f86c9;--jump:#2e9e6a
+    --shift:#e08a00;--drop:#1f86c9;--jump:#2e9e6a;--pain:#d6457a
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#121220;--card:#1c1b2e;--field:#26253c;--border:#36345a;--text:#e9e8f7;--muted:#9c99b8;--faint:rgba(156,153,184,.2);
       --accent:#8578f2;--on-accent:#12121f;--line:#9b8ff7;--high:rgba(133,120,242,.13);--hi2:rgba(133,120,242,.32);--grid:rgba(255,255,255,.06);
-      --shift:#f5a524;--drop:#5bb6f0;--jump:#4cc38a
+      --shift:#f5a524;--drop:#5bb6f0;--jump:#4cc38a;--pain:#f07aa6
     }
   }
   *{box-sizing:border-box}
@@ -85,7 +85,9 @@
   .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}
   .ring{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle;border:1.5px solid var(--muted)}
   .sw{display:inline-block;width:14px;height:10px;background:var(--hi2);margin-right:5px;vertical-align:middle;border-radius:3px}
-  .sw.p{background:var(--high);border:1.5px dashed var(--accent)}
+  .sw.p{background:var(--high)}
+  .sw.ws{background:transparent;border:1.5px dashed var(--shift)}
+  .sw.wd{background:transparent;border:1.5px dashed var(--drop)}
   .bar{display:inline-block;width:16px;height:3px;background:var(--accent);margin-right:5px;vertical-align:middle;border-radius:2px}
   .calnav{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   .calnav button{background:var(--field);color:var(--text);padding:6px 14px}
@@ -94,7 +96,13 @@
   .cal .d{aspect-ratio:1;border-radius:9px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;background:var(--field);border:1.5px solid transparent}
   .cal .d.blank{background:transparent}
   .cal .d.hi{background:var(--hi2)}
-  .cal .d.phi{background:var(--high);border:1.5px dashed var(--accent)}
+  .cal .d.phi{background:var(--high)}
+  .cal .d.pws{border:1.5px dashed var(--shift)}
+  .cal .d.pwd{border:1.5px dashed var(--drop)}
+  .cal .d:not(.blank):not(.fut){cursor:pointer}
+  .pn{font-size:9px;font-weight:700;color:var(--pain);line-height:1.1}
+  .seg.pain{flex-wrap:wrap}
+  .seg.pain button.on{background:var(--pain);color:#fff}
   .cal .d.miss{opacity:.45}
   .cal .d.fut:not(.phi){opacity:.45}
   .cal .d.today{border:1.5px solid var(--text)}
@@ -117,9 +125,11 @@
 
   <section class="card">
     <form id="entry" autocomplete="off">
-      <div class="row" style="margin-top:0"><input id="temp" type="number" inputmode="decimal" step="0.01" placeholder="97.40" required><span id="unitLbl">°F</span></div>
+      <div class="row" style="margin-top:0"><input id="temp" type="number" inputmode="decimal" step="0.01" placeholder="97.40"><span id="unitLbl">°F</span></div>
       <div class="row"><input id="date" type="date"><input id="time" type="time"></div>
       <div class="row"><input id="note" placeholder="Note (optional)"></div>
+      <p class="muted" style="margin-top:12px">Ovulation pain</p>
+      <div class="seg pain" id="painSeg" style="margin:6px 0 0"><button type="button" data-p="">None</button><button type="button" data-p="L">Left</button><button type="button" data-p="R">Right</button><button type="button" data-p="both">Both</button></div>
       <label class="check"><input type="checkbox" id="off"> Off reading — leave it out of the analysis</label>
       <button id="saveBtn" type="submit">Save</button>
       <p id="hint" class="muted"></p>
@@ -139,6 +149,8 @@
       <span><span class="dot" style="background:var(--shift)"></span>Shift</span>
       <span><span class="dot" style="background:var(--drop)"></span>Drop</span>
       <span><span class="dot" style="background:var(--jump)"></span>Unusual change</span>
+      <span><span class="ring" style="border-color:var(--shift)"></span>Weak — worth checking</span>
+      <span><span style="color:var(--pain)">★</span> Ovulation pain</span>
       <span><span class="ring"></span>Off reading</span>
       <span><span class="sw"></span>High phase</span>
       <span>– – Coverline</span>
@@ -151,10 +163,14 @@
     <div class="legend">
       <span><span class="sw"></span>High phase</span>
       <span><span class="sw p"></span>Predicted high</span>
+      <span><span class="sw ws"></span>Likely shift window</span>
+      <span><span class="sw wd"></span>Likely drop window</span>
       <span><span class="dot" style="background:var(--shift)"></span>Shift</span>
       <span><span class="dot" style="background:var(--drop)"></span>Drop</span>
-      <span><span class="ring"></span>Predicted</span>
+      <span><span class="ring"></span>Most likely day / weak detection</span>
+      <span><b class="pn" style="font-size:12px">L R</b> Ovulation pain</span>
     </div>
+    <p class="muted">Tap a day to set a shift or drop yourself, or to log ovulation pain.</p>
   </section>
 
 
@@ -166,9 +182,17 @@
     <p class="muted" id="overlayNote"></p>
   </section>
 
+  <section class="card" id="trendCard">
+    <h2>Long-term trends</h2>
+    <div class="chartbox sm"><canvas id="trendLen"></canvas></div>
+    <div class="chartbox sm" style="margin-top:12px"><canvas id="trendTemp"></canvas></div>
+    <p class="muted" id="trendNote"></p>
+  </section>
+
   <section class="card">
     <h2>Cycle history</h2>
     <div class="tbl"><table id="hist"></table></div>
+    <p class="muted" id="painNote"></p>
   </section>
 
   <dialog id="settings">
@@ -182,7 +206,26 @@
       <button id="sSave" style="width:100%;margin-top:16px">Save</button>
     </form>
   </dialog>
-  <p class="muted" style="text-align:center">BBT · version 2026-10-30b</p>
+  <dialog id="dayDlg">
+    <form method="dialog">
+      <h2 id="dayTitle"></h2>
+      <p class="muted" id="dayInfo"></p>
+      <label>Shift or drop on this day</label>
+      <select id="dayMark">
+        <option value="">Automatic — let the app decide</option>
+        <option value="shift">Shift on this day</option>
+        <option value="drop">Drop on this day</option>
+        <option value="none">Not a shift or drop</option>
+      </select>
+      <p class="muted" id="dayMarkHelp"></p>
+      <label>Ovulation pain</label>
+      <div class="seg pain" id="dayPain"><button type="button" data-p="">None</button><button type="button" data-p="L">Left</button><button type="button" data-p="R">Right</button><button type="button" data-p="both">Both</button></div>
+      <div class="row" style="margin-top:16px"><button type="button" id="dayCancel" style="flex:1;background:var(--field);color:var(--text)">Cancel</button><button type="button" id="daySave" style="flex:1">Save</button></div>
+      <p class="muted" id="dayMsg"></p>
+    </form>
+  </dialog>
+
+  <p class="muted" style="text-align:center">BBT · version 2026-10-30c</p>
 
 <script>
 const DEFAULT_URL = '';   // set your Apps Script URL in Settings; it stays on your phone only
@@ -197,7 +240,8 @@ const getCfg = () => { const c = store.get('bbt_cfg', {}); return { ...c, url: c
 let rows = store.get('bbt_rows', []);
 let range = store.get('bbt_range', 60);
 let ovN = store.get('bbt_ovN', 6), ovAlign = store.get('bbt_ovAlign', 'drop');
-let calMonth = null, chart, overlay, A = null;
+let ev = store.get('bbt_ev', {});   // date -> { mark, pain }
+let calMonth = null, chart, overlay, trendLen, trendTemp, A = null;
 
 // ---------- helpers ----------
 const pad = n => String(n).padStart(2, '0');
@@ -239,16 +283,23 @@ function analyze(cfg) {
   });
   const n = V.length, t = V.map(v => v.t), d = V.map(v => v.date);
 
-   // shifts: 3-over-6 with standard exceptions; drops: sustained fall to the coverline
+  // shifts: 3-over-6 with standard exceptions; drops: sustained fall below the high phase.
+  // Days you mark by hand (Marks column) override the rules: shift / drop / none.
   const shifts = [], drops = [], highs = [];
   let phase = 'low', cl = null, start = null;
   const baseline = i => {
     const b = t.slice(i - 6, i).sort((x, y) => y - x);
     return b[0] - b[1] >= minRise ? b[1] : b[0];   // ignore one lone spike
   };
-  for (let i = 6; i < n; i++) {
+  const looseBase = i => i >= 6 ? baseline(i) : Math.max(...t.slice(0, i));
+  const MK = ds => (ev[ds] && ev[ds].mark) || '';
+  const manualAhead = (i, kind) => { for (let j = i + 1; j < n && dayDiff(d[i], d[j]) <= 7; j++) if (MK(d[j]) === kind) return true; return false; };
+  for (let i = 1; i < n; i++) {
+    const mk = MK(d[i]);
     if (phase === 'low') {
-      if (i + 2 >= n) break;
+      if (mk === 'drop') { drops.push({ date: d[i], manual: true }); continue; }
+      if (mk === 'shift') { phase = 'high'; cl = looseBase(i); start = i; shifts.push({ date: d[i], ov: d[i - 1], cl, manual: true }); continue; }
+      if (i < 6 || mk === 'none' || i + 2 >= n) continue;
       if (dayDiff(d[i - 6], d[i]) > 21 || dayDiff(d[i], d[i + 2]) > 5) continue;
       const c = baseline(i);
       if (t[i] <= c) continue;
@@ -256,21 +307,26 @@ function analyze(cfg) {
       const strict = a[1] > c && a[2] >= c + minRise;
       const fourth = a.length === 4 && a[1] > c && a[2] > c && a[3] > c;
       const fallback = a.length === 4 && [a[1], a[2]].filter(v => v > c).length === 1 && a[3] >= c + minRise;
-      if (strict || fourth || fallback) {
+      if ((strict || fourth || fallback) && !manualAhead(i, 'shift')) {
+        const weak = !strict && !fourth;   // only confirmed by the dip-tolerant fallback rule
         phase = 'high'; cl = c; start = i;
-        shifts.push({ date: d[i], ov: d[i - 1], cl });
-        i += strict ? 2 : 3;
+        shifts.push({ date: d[i], ov: d[i - 1], cl, weak });
+        let skip = strict ? 2 : 3;
+        while (skip-- > 0 && i + 1 < n && !MK(d[i + 1])) i++;   // don't skip over a hand-set mark
       }
     } else {
-      if (dayDiff(d[i - 1], d[i]) > 10) { highs.push({ from: d[start], to: d[i - 1], cl }); phase = 'low'; continue; }
+      if (dayDiff(d[i - 1], d[i]) > 10) { highs.push({ from: d[start], to: d[i - 1], cl }); phase = 'low'; i--; continue; }
+      if (mk === 'shift') { highs.push({ from: d[start], to: addDays(d[i], -1), cl }); cl = looseBase(i); start = i; shifts.push({ date: d[i], ov: d[i - 1], cl, manual: true }); continue; }
+      if (mk === 'drop') { highs.push({ from: d[start], to: addDays(d[i], -1), cl }); drops.push({ date: d[i], len: dayDiff(d[start], d[i]), manual: true }); phase = 'low'; continue; }
+      if (mk === 'none' || dayDiff(d[start], d[i]) < 7) continue;
       const thr = Math.max(cl, mean(t.slice(start, i)) - dropBelow);   // end of high phase, relative to its own level
-      if (dayDiff(d[start], d[i]) < 7 || t[i] > thr) continue;
+      if (t[i] > thr) continue;
       const next = t.slice(i + 1, i + 3);
       if (!next.length) continue;
-      const sustained = next[0] <= thr || (next.length === 2 && mean([t[i], ...next]) <= thr + minRise / 2);
-      if (sustained) {
+      const firm = next[0] <= thr;
+      if ((firm || (next.length === 2 && mean([t[i], ...next]) <= thr + minRise / 2)) && !manualAhead(i, 'drop')) {
         highs.push({ from: d[start], to: addDays(d[i], -1), cl });
-        drops.push({ date: d[i], len: dayDiff(d[start], d[i]) });
+        drops.push({ date: d[i], len: dayDiff(d[start], d[i]), weak: !firm && !(next.length === 2 && next[1] <= thr) });
         phase = 'low';
       }
     }
@@ -307,6 +363,16 @@ function analyze(cfg) {
         if (t.slice(s).every(v => v > c)) { pending = k; break; }
   }
 
+  // ovulation pain, relative to the nearest shift
+  const painDays = Object.keys(ev).filter(k => ev[k] && ev[k].pain).sort();
+  const painRel = [], sides = { L: 0, R: 0, both: 0 };
+  painDays.forEach(pd => {
+    sides[ev[pd].pain] = (sides[ev[pd].pain] || 0) + 1;
+    let best = null;
+    shifts.forEach(s => { const r = dayDiff(s.date, pd); if (Math.abs(r) <= 7 && (best == null || Math.abs(r) < Math.abs(best))) best = r; });
+    if (best != null) painRel.push(best);
+  });
+
   // cycles (drop to drop)
   const buildCycle = (startD, endD, open) => {
     const sh = shifts.find(s => s.date > startD && s.date < endD);
@@ -317,7 +383,8 @@ function analyze(cfg) {
     return { start: startD, len: dayDiff(startD, endD), open,
       shiftDay: sh ? dayDiff(startD, sh.date) + 1 : null,
       highLen: sh ? dayDiff(sh.date, endD) : null,
-      avgLow: aL, avgHigh: aH, size: (aL != null && aH != null) ? aH - aL : null };
+      avgLow: aL, avgHigh: aH, size: (aL != null && aH != null) ? aH - aL : null,
+      pain: painDays.filter(p => p >= startD && p < endD).map(p => ev[p].pain) };
   };
   const cycles = [];
   const gapIn = (a, b) => { for (let j = 1; j < n; j++) if (d[j] > a && d[j] <= b && dayDiff(d[j - 1], d[j]) > 10) return true; return false; };
@@ -327,6 +394,7 @@ function analyze(cfg) {
   const done = cycles.filter(c => !c.open).slice(-6);
   return {
     V, wake, offBy, shifts, drops, highs, jumps, jumpThr, trend, pending, phase, curShift, cycles,
+    pain: { days: painDays, rel: painRel, sides },
     lastDrop: drops[drops.length - 1],
     medCycle: median(done.map(c => c.len)),
     medHigh: median(done.filter(c => c.highLen).map(c => c.highLen)),
@@ -336,19 +404,39 @@ function analyze(cfg) {
 }
 
 function predict(A) {
-  const P = { shift: null, drop: null, hi: null }, today = todayStr();
+  // windows come from your own cycle-to-cycle spread (middle 60% of the last 12 cycles)
+  const P = { shift: null, drop: null, hi: null }, tom = addDays(todayStr(), 1);
+  const done = A.cycles.filter(c => !c.open).slice(-12);
+  const span = (vals, med) => vals.length >= 3 ? [pct(vals, 0.2), pct(vals, 0.8)] : (med != null ? [med - 2, med + 2] : null);
+  const win = (base, sp, mid) => {
+    if (!sp) return null;
+    let from = addDays(base, sp[0]), to = addDays(base, sp[1]), m = addDays(base, mid);
+    if (to < tom) return null;
+    if (from < tom) from = tom;
+    if (m < from) m = from; if (m > to) m = to;
+    return { from, to, mid: m };
+  };
+  const highs = done.filter(c => c.highLen).map(c => c.highLen);
+  const lows = done.filter(c => c.shiftDay).map(c => c.shiftDay - 1);
+  const lens = done.map(c => c.len);
   if (A.phase === 'high' && A.medHigh) {
-    const drop = addDays(A.curShift.date, A.medHigh);
-    if (drop > today) { P.drop = drop; P.hi = { from: addDays(today, 1), to: addDays(drop, -1) }; }
-  } else if (A.phase === 'low' && A.lastDrop && A.medLow) {
-    const sh = addDays(A.lastDrop.date, A.medLow);
-    if (sh > today) {
-      P.shift = sh;
-      if (A.medHigh) { P.drop = addDays(sh, A.medHigh); P.hi = { from: sh, to: addDays(P.drop, -1) }; }
+    P.drop = win(A.curShift.date, span(highs, A.medHigh), A.medHigh);
+    if (P.drop) P.hi = { from: tom, to: addDays(P.drop.mid, -1) };
+  } else if (A.phase === 'low' && A.lastDrop && A.medLow != null) {
+    P.shift = win(A.lastDrop.date, span(lows, A.medLow), A.medLow);
+    if (P.shift && A.medCycle) {
+      P.drop = win(A.lastDrop.date, span(lens, A.medCycle), A.medCycle);
+      if (P.drop && P.drop.mid > P.shift.mid) P.hi = { from: P.shift.mid, to: addDays(P.drop.mid, -1) };
     }
   }
   return P;
 }
+const fmtWin = w => {
+  const a = parse(w.from), b = parse(w.to), md = x => x.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  if (w.from === w.to) return md(a);
+  return a.getMonth() === b.getMonth() ? `${md(a)}–${b.getDate()}` : `${md(a)} – ${md(b)}`;
+};
+const PAIN = { L: 'left', R: 'right', both: 'both sides' }, PAIN_SHORT = { L: 'L', R: 'R', both: 'LR' };
 
 // ---------- rendering ----------
 function renderStatus(A, P) {
@@ -362,7 +450,8 @@ function renderStatus(A, P) {
   if (A.phase === 'high') {
     const s = A.curShift, day = dayDiff(s.date, today) + 1;
     p.push(`<b>High phase</b> · day ${day} since the shift on ${long(s.date)} (ovulation ≈ ${long(s.ov)}).`);
-    if (P.drop) p.push(`Drop likely around <b>${long(P.drop)}</b>.`);
+    if (s.weak) p.push(`<span class="muted">This shift is a weak detection — tap ${short(s.date)} in the calendar to confirm or move it.</span>`);
+    if (P.drop) p.push(`Drop likely <b>${fmtWin(P.drop)}</b>${P.drop.from !== P.drop.to ? ` (most often around ${long(P.drop.mid)})` : ''}.`);
     else if (A.medHigh && day > A.medHigh) p.push(`This high phase is running longer than your usual ~${A.medHigh} days.`);
     if (A.V[A.V.length - 1].t <= s.cl) p.push(`Latest reading is at/below the coverline (${fmtT(s.cl)}°) — a drop may be starting.`);
   } else {
@@ -370,7 +459,8 @@ function renderStatus(A, P) {
     if (dr) {
       const day = dayDiff(dr.date, today) + 1, expect = A.medLow != null ? A.medLow + 1 : null;
       p.push(`<b>Low phase</b> · cycle day ${day} (drop on ${long(dr.date)}).`);
-      if (P.shift) p.push(`Shift likely around <b>${long(P.shift)}</b>.`);
+      if (dr.weak) p.push(`<span class="muted">That drop is a weak detection — tap ${short(dr.date)} in the calendar to confirm or move it.</span>`);
+      if (P.shift) p.push(`Shift likely <b>${fmtWin(P.shift)}</b>${P.shift.from !== P.shift.to ? ` (most often around ${long(P.shift.mid)})` : ''}.`);
       if (!A.pending && day > (expect ? expect + 7 : 30)) {
         p.push(`No clear shift detected yet${expect ? ` — you usually shift around cycle day ${expect}` : ''}.`);
       }
@@ -400,8 +490,8 @@ function renderChart(A) {
   A.drops.forEach(dd => kind[dd.date] = 'drop');
   const col = { shift: css('--shift'), drop: css('--drop'), jump: css('--jump'), dip: css('--jump') };
   const line = css('--line'), muted = css('--muted'), accent = css('--accent');
-  const offR = view.map(isOff);
-  const pc = view.map((r, k) => offR[k] ? 'transparent' : (col[kind[r.date]] || line));
+  const offR = view.map(isOff), weakD = new Set([...A.shifts, ...A.drops].filter(x => x.weak).map(x => x.date));
+  const pc = view.map((r, k) => offR[k] || weakD.has(r.date) ? (offR[k] ? 'transparent' : css('--card')) : (col[kind[r.date]] || line));
   const pb = view.map((r, k) => offR[k] ? muted : (col[kind[r.date]] || line));
   const pr = view.map((r, k) => { const t = kind[r.date]; if (offR[k]) return 4;
     return t === 'shift' || t === 'drop' ? 7 : t ? 5 : (len > 120 ? 0 : 2.5); });
@@ -423,7 +513,9 @@ function renderChart(A) {
       { data: view.map(r => r.temp), borderColor: css('--faint'), borderWidth: 1, tension: .2, spanGaps: true,
         pointBackgroundColor: pc, pointBorderColor: pb, pointBorderWidth: 1.5, pointRadius: pr, pointStyle: ps, pointHoverRadius: 7, order: 1 },
       { data: trend, borderColor: accent, borderWidth: 3, tension: .35, pointRadius: 0, spanGaps: true, order: 2 },
-      { data: cl, borderColor: muted, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, spanGaps: false, order: 3 }
+      { data: cl, borderColor: muted, borderDash: [5, 4], borderWidth: 1.5, pointRadius: 0, spanGaps: false, order: 3 },
+      { data: view.map(r => (ev[r.date] && ev[r.date].pain) ? Math.min(...view.map(x => x.temp)) - 0.12 : null), showLine: false,
+        pointStyle: 'star', pointRadius: 7, pointHoverRadius: 7, pointBorderWidth: 2, pointBorderColor: css('--pain'), pointBackgroundColor: css('--pain'), order: 0 }
     ]},
     options: {
       responsive: true, maintainAspectRatio: false, animation: false,
@@ -440,7 +532,10 @@ function renderChart(A) {
               const r = view[i.dataIndex], out = [];
               if (isOff(r)) out.push('Off reading — left out');
               else {
-                if (label[kind[r.date]]) out.push(label[kind[r.date]]);
+                if (label[kind[r.date]]) out.push(label[kind[r.date]] + (weakD.has(r.date) ? ' — weak, worth checking' : ''));
+                const e = ev[r.date] || {};
+                if (e.mark) out.push(e.mark === 'none' ? 'You marked: not a shift or drop' : `You marked this ${e.mark}`);
+                if (e.pain) out.push(`Ovulation pain: ${PAIN[e.pain] || e.pain}`);
                 const o = A.offBy(r);
                 if (Math.abs(o) >= 60) out.push(`Taken ${hm(o)} ${o > 0 ? 'late' : 'early'}`);
               }
@@ -482,7 +577,7 @@ function renderCalendar(A, P) {
   $('#calTitle').textContent = new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
   const startDow = new Date(y, m - 1, 1).getDay(), days = new Date(y, m, 0).getDate();
   const have = new Set(rows.map(r => r.date)), offs = new Set(rows.filter(isOff).map(r => r.date));
-  const mark = {}; A.shifts.forEach(s => mark[s.date] = 'shift'); A.drops.forEach(dd => mark[dd.date] = 'drop');
+  const mark = {}; A.shifts.forEach(s => mark[s.date] = s); A.drops.forEach(dd => mark[dd.date] = dd);
   const firstDate = rows.length ? rows[0].date : today;
   let html = ['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(x => `<div class="dow">${x}</div>`).join('');
   for (let i = 0; i < startDow; i++) html += '<div class="d blank"></div>';
@@ -492,15 +587,22 @@ function renderCalendar(A, P) {
     if (ds > today) {
       cls.push('fut');
       if (P.hi && ds >= P.hi.from && ds <= P.hi.to) cls.push('phi');
-      if (ds === P.shift) mk = '<span class="mk" style="border:1.5px solid var(--shift)"></span>';
-      if (ds === P.drop) mk = '<span class="mk" style="border:1.5px solid var(--drop)"></span>';
+      if (P.shift && ds >= P.shift.from && ds <= P.shift.to) cls.push('pws');
+      if (P.drop && ds >= P.drop.from && ds <= P.drop.to) cls.push('pwd');
+      if (P.shift && ds === P.shift.mid) mk = '<span class="mk" style="border:1.5px solid var(--shift)"></span>';
+      if (P.drop && ds === P.drop.mid) mk = '<span class="mk" style="border:1.5px solid var(--drop)"></span>';
     } else {
       if (A.highs.some(h => ds >= h.from && ds <= h.to)) cls.push('hi');
       if ((ds >= firstDate && !have.has(ds)) || offs.has(ds)) cls.push('miss');
-      if (mark[ds]) mk = `<span class="mk" style="background:var(--${mark[ds]})"></span>`;
+      const m = mark[ds];
+      if (m) {
+        const k = A.shifts.includes(m) ? 'shift' : 'drop';
+        mk = m.weak ? `<span class="mk" style="border:1.5px solid var(--${k})"></span>` : `<span class="mk" style="background:var(--${k})"></span>`;
+      }
       if (ds === today) cls.push('today');
     }
-    html += `<div class="${cls.join(' ')}"><span>${dn}</span>${mk}</div>`;
+    const pn = ev[ds] && ev[ds].pain ? `<span class="pn">${PAIN_SHORT[ev[ds].pain] || '•'}</span>` : '';
+    html += `<div class="${cls.join(' ')}" data-d="${ds}"><span>${dn}</span>${mk}${pn}</div>`;
   }
   $('#cal').innerHTML = html;
 }
@@ -575,15 +677,67 @@ function renderOverlay(A) {
   });
 }
 
+function renderTrends(A) {
+  const done = A.cycles.filter(c => !c.open);
+  $('#trendCard').style.display = done.length >= 3 ? '' : 'none';
+  if (trendLen) trendLen.destroy();
+  if (trendTemp) trendTemp.destroy();
+  if (done.length < 3) return;
+  const muted = css('--muted');
+  const labels = done.map(c => parse(c.start).toLocaleDateString(undefined, { month: 'short', year: '2-digit' }));
+  const opts = unit => ({
+    responsive: true, maintainAspectRatio: false, animation: false, interaction: { mode: 'index', intersect: false },
+    plugins: { legend: { display: true, labels: { color: muted, boxWidth: 12, font: { size: 12 } } },
+      tooltip: { callbacks: { title: it => 'Cycle from ' + long(done[it[0].dataIndex].start),
+        label: i => `${i.dataset.label}: ${unit === 'd' ? i.parsed.y + ' days' : fmtT(i.parsed.y) + '°'}` } } },
+    scales: { x: { ticks: { color: muted, maxRotation: 0, autoSkip: true, maxTicksLimit: 6 }, grid: { display: false } },
+              y: { ticks: { color: muted }, grid: { color: css('--grid') } } }
+  });
+  const ln = (label, data, color) => ({ label, data, borderColor: color, backgroundColor: color, borderWidth: 2, pointRadius: 3, tension: .25, spanGaps: true });
+  trendLen = new Chart($('#trendLen'), { type: 'line', options: opts('d'), data: { labels, datasets: [
+    ln('Cycle', done.map(c => c.len), css('--accent')),
+    ln('High phase', done.map(c => c.highLen), css('--shift')),
+    ln('Low phase', done.map(c => c.shiftDay ? c.shiftDay - 1 : null), css('--drop')) ] } });
+  trendTemp = new Chart($('#trendTemp'), { type: 'line', options: opts('t'), data: { labels, datasets: [
+    ln('Avg high', done.map(c => c.avgHigh), css('--shift')),
+    ln('Avg low', done.map(c => c.avgLow), css('--drop')) ] } });
+
+  const vals = (arr, f) => arr.map(f).filter(v => v != null);
+  const spread = v => v.length >= 3 ? Math.round((pct(v, 0.8) - pct(v, 0.2)) / 2) : null;
+  const hS = spread(vals(done, c => c.highLen)), lS = spread(vals(done, c => c.shiftDay ? c.shiftDay - 1 : null));
+  const out = [];
+  if (hS != null && lS != null) out.push(`Across ${done.length} cycles your high phase varies by about ±${hS} day${hS === 1 ? '' : 's'} and your low phase by about ±${lS} — so most of the change in cycle length comes from the ${hS <= lS ? 'low' : 'high'} phase.`);
+  const recent = done.slice(-6), prior = done.slice(-12, -6);
+  if (prior.length >= 3) {
+    const md = (a, f) => { const v = vals(a, f); return v.length ? median(v) : '–'; };
+    const av = (a, f) => { const v = vals(a, f); return v.length ? fmtT(mean(v)) : '–'; };
+    out.push(`Last ${recent.length} cycles vs the ${prior.length} before: cycle ${md(recent, c => c.len)} vs ${md(prior, c => c.len)} days · high phase ${md(recent, c => c.highLen)} vs ${md(prior, c => c.highLen)} · avg low ${av(recent, c => c.avgLow)}° vs ${av(prior, c => c.avgLow)}° · avg high ${av(recent, c => c.avgHigh)}° vs ${av(prior, c => c.avgHigh)}°.`);
+  }
+  $('#trendNote').textContent = out.join(' ');
+}
+
 function renderHistory(A) {
   const f = v => v == null ? '–' : fmtT(v);
-  const head = '<tr><th>Started</th><th>Days</th><th>Shift day</th><th>High days</th><th>Rise</th><th>Avg low</th><th>Avg high</th></tr>';
-  const typ = A.medCycle ? `<tr class="typ"><td>Typical</td><td>${A.medCycle}</td><td>${A.medLow != null ? A.medLow + 1 : '–'}</td><td>${A.medHigh ?? '–'}</td><td>${A.avgRise != null ? '+' + fmtT(A.avgRise) : '–'}</td><td></td><td></td></tr>` : '';
+  const head = '<tr><th>Started</th><th>Days</th><th>Shift day</th><th>High days</th><th>Rise</th><th>Avg low</th><th>Avg high</th><th>Ov pain</th></tr>';
+  const typ = A.medCycle ? `<tr class="typ"><td>Typical</td><td>${A.medCycle}</td><td>${A.medLow != null ? A.medLow + 1 : '–'}</td><td>${A.medHigh ?? '–'}</td><td>${A.avgRise != null ? '+' + fmtT(A.avgRise) : '–'}</td><td></td><td></td><td></td></tr>` : '';
   const body = [...A.cycles].reverse().map(c => `<tr class="${c.open ? 'cur' : ''}">
     <td>${parse(c.start).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}${c.open ? ' · now' : ''}</td>
     <td>${c.len}</td><td>${c.shiftDay ?? '–'}</td><td>${c.highLen ?? '–'}</td>
-    <td>${c.size == null ? '–' : '+' + fmtT(c.size)}</td><td>${f(c.avgLow)}</td><td>${f(c.avgHigh)}</td></tr>`).join('');
-  $('#hist').innerHTML = head + typ + (body || '<tr><td colspan="7" class="muted">Needs at least one full cycle.</td></tr>');
+    <td>${c.size == null ? '–' : '+' + fmtT(c.size)}</td><td>${f(c.avgLow)}</td><td>${f(c.avgHigh)}</td>
+    <td>${c.pain.length ? c.pain.map(x => PAIN_SHORT[x] || x).join(', ') : '–'}</td></tr>`).join('');
+  $('#hist').innerHTML = head + typ + (body || '<tr><td colspan="8" class="muted">Needs at least one full cycle.</td></tr>');
+
+  const pn = A.pain, n = pn.days.length;
+  if (!n) { $('#painNote').textContent = 'Ovulation pain: none logged yet. Use the pain buttons when it happens, and the app will show how it lines up with your shifts.'; return; }
+  const sides = ['L', 'R', 'both'].filter(k => pn.sides[k]).map(k => `${PAIN[k]} ${pn.sides[k]}`).join(', ');
+  const rel = r => r === 0 ? 'on the day of' : `${Math.abs(r)} day${Math.abs(r) === 1 ? '' : 's'} ${r < 0 ? 'before' : 'after'}`;
+  const sg = r => (r > 0 ? '+' : r < 0 ? '−' : '') + Math.abs(r);
+  let txt = `Ovulation pain logged ${n} time${n === 1 ? '' : 's'} (${sides}).`;
+  if (pn.rel.length) {
+    const m = median(pn.rel), lo = Math.min(...pn.rel), hi = Math.max(...pn.rel);
+    txt += ` It usually comes ${rel(m)} your temperature shift${pn.rel.length > 1 && lo !== hi ? ` (range ${sg(lo)} to ${sg(hi)} days)` : ''}; the shift typically shows up the day after ovulation.`;
+  }
+  $('#painNote').textContent = txt;
 }
 
 function renderToday() {
@@ -598,7 +752,7 @@ function render() {
   if (!rows.length) { $('#status').textContent = 'No readings found — check the Apps Script.'; return; }
   A = analyze(getCfg());
   const P = predict(A);
-    renderStatus(A, P); renderChart(A); renderCalendar(A, P); renderOverlay(A); renderHistory(A);
+    renderStatus(A, P); renderChart(A); renderCalendar(A, P); renderOverlay(A); renderTrends(A); renderHistory(A);
 }
 
 // ---------- data ----------
@@ -609,35 +763,94 @@ async function load() {
     const res = await fetch(`${url}?token=${encodeURIComponent(token)}`);
     const j = await res.json();
     if (j.error) throw new Error(j.error);
-    const map = new Map(); j.rows.forEach(r => map.set(r.date, r));
+    const map = new Map(), newEv = {};
+    j.rows.forEach(r => {
+      if (r.mark || r.pain) newEv[r.date] = { mark: r.mark || '', pain: r.pain || '' };
+      if (r.temp != null && isFinite(r.temp)) map.set(r.date, { date: r.date, time: r.time, temp: r.temp, note: r.note || '' });
+    });
     rows = [...map.values()].sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : 0);
-    store.set('bbt_rows', rows);
+    ev = newEv;
+    store.set('bbt_rows', rows); store.set('bbt_ev', ev);
     render();
   } catch (e) { msg('Couldn’t load: ' + e.message); }
 }
 
+async function post(body) {
+  const { url, token } = getCfg();
+  const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ token, ...body }) });
+  const j = await res.json();
+  if (!j.ok) throw new Error(j.error || 'save failed');
+}
+const setEv = (date, patch) => {
+  const e = { mark: '', pain: '', ...(ev[date] || {}), ...patch };
+  if (e.mark || e.pain) ev[date] = e; else delete ev[date];
+  store.set('bbt_ev', ev);
+};
+const segVal = sel => { const b = document.querySelector(sel + ' button.on'); return b ? b.dataset.p : ''; };
+const setSeg = (sel, v) => document.querySelectorAll(sel + ' button').forEach(b => b.classList.toggle('on', b.dataset.p === (v || '')));
+['#painSeg', '#dayPain'].forEach(sel => document.querySelectorAll(sel + ' button').forEach(b => b.addEventListener('click', () => setSeg(sel, b.dataset.p))));
+const syncPain = () => { const d = $('#date').value || todayStr(); setSeg('#painSeg', (ev[d] && ev[d].pain) || ''); };
+
 $('#entry').addEventListener('submit', async e => {
   e.preventDefault();
-  const { url, token, unit } = getCfg();
+  const { unit } = getCfg();
   const temp = parseFloat($('#temp').value), date = $('#date').value || todayStr(), time = $('#time').value || nowTime();
+  const pain = segVal('#painSeg'), painChanged = pain !== ((ev[date] && ev[date].pain) || '');
   let note = $('#note').value.trim();
   if ($('#off').checked) note = ('x ' + note).trim();
-  if (!isFinite(temp)) return;
+  if (!isFinite(temp) && !painChanged) { msg('Enter a temperature.'); return; }
   const [lo, hi] = unit === 'C' ? [34.5, 39] : [94, 102];
-  if ((temp < lo || temp > hi) && !confirm(`${temp}° looks unusual — save anyway?`)) return;
+  if (isFinite(temp) && (temp < lo || temp > hi) && !confirm(`${temp}° looks unusual — save anyway?`)) return;
   const btn = $('#saveBtn'); btn.disabled = true; msg('Saving…');
   try {
-    const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ token, date, time, temp, note }) });
-    const j = await res.json();
-    if (!j.ok) throw new Error(j.error || 'save failed');
-    const ex = rows.find(r => r.date === date);
-    if (ex) { ex.temp = temp; ex.time = time; if (note) ex.note = note; }
-    else { rows.push({ date, time, temp, note }); rows.sort((a, b) => a.date < b.date ? -1 : 1); }
-    store.set('bbt_rows', rows);
+    const body = { date, pain };
+    if (isFinite(temp)) Object.assign(body, { time, temp, note });
+    await post(body);
+    if (isFinite(temp)) {
+      const ex = rows.find(r => r.date === date);
+      if (ex) { ex.temp = temp; ex.time = time; if (note) ex.note = note; }
+      else { rows.push({ date, time, temp, note }); rows.sort((a, b) => a.date < b.date ? -1 : 1); }
+      store.set('bbt_rows', rows);
+    }
+    setEv(date, { pain });
     $('#temp').value = ''; $('#note').value = ''; $('#off').checked = false; $('#temp').blur();
-    msg('Saved ✓'); render();
+    msg(isFinite(temp) ? 'Saved ✓' : 'Ovulation pain saved ✓'); render(); syncPain();
   } catch (err) { msg('Couldn’t save: ' + err.message); }
+  finally { btn.disabled = false; }
+});
+
+// ---------- tap a calendar day: set a shift/drop yourself, log ovulation pain ----------
+let dayDate = null;
+function openDay(ds) {
+  dayDate = ds;
+  const r = rows.find(x => x.date === ds), e = ev[ds] || {};
+  const sh = A && A.shifts.find(s => s.date === ds), dr = A && A.drops.find(x => x.date === ds), det = sh || dr;
+  let info = r ? `Reading: ${fmtT(r.temp)}°${isOff(r) ? ' (marked off)' : ''}.` : 'No reading this day.';
+  if (det) info += ` Detected: ${sh ? 'shift' : 'drop'}${det.manual ? ' (set by you)' : det.weak ? ' (weak — worth checking)' : ''}.`;
+  $('#dayTitle').textContent = long(ds);
+  $('#dayInfo').textContent = info;
+  const usable = r && !isOff(r);
+  $('#dayMark').value = e.mark || ''; $('#dayMark').disabled = !usable;
+  $('#dayMarkHelp').textContent = !r ? 'Shift and drop marks need a reading on this day.'
+    : isOff(r) ? 'This reading is marked off, so it isn’t used for shifts or drops.'
+    : 'Setting a shift or drop here replaces any the app detected within the week before it.';
+  setSeg('#dayPain', e.pain || '');
+  $('#dayMsg').textContent = '';
+  $('#dayDlg').showModal();
+}
+$('#cal').addEventListener('click', e => {
+  const el = e.target.closest('.d[data-d]');
+  if (el && el.dataset.d <= todayStr()) openDay(el.dataset.d);
+});
+$('#dayCancel').addEventListener('click', () => $('#dayDlg').close());
+$('#daySave').addEventListener('click', async () => {
+  const mark = $('#dayMark').disabled ? ((ev[dayDate] && ev[dayDate].mark) || '') : $('#dayMark').value, pain = segVal('#dayPain');
+  const btn = $('#daySave'); btn.disabled = true; $('#dayMsg').textContent = 'Saving…';
+  try {
+    await post({ date: dayDate, mark, pain });
+    setEv(dayDate, { mark, pain });
+    $('#dayDlg').close(); render(); syncPain();
+  } catch (err) { $('#dayMsg').textContent = 'Couldn’t save: ' + err.message; }
   finally { btn.disabled = false; }
 });
 
@@ -675,8 +888,8 @@ segGroup('#rangeSeg', 'r', () => range, v => { range = v === 'all' ? 'all' : +v;
 segGroup('#ovSeg', 'n', () => ovN, v => { ovN = v === 'all' ? 'all' : +v; store.set('bbt_ovN', ovN); });
 segGroup('#alignSeg', 'a', () => ovAlign, v => { ovAlign = v; store.set('bbt_ovAlign', ovAlign); });
 
-const setNow = () => { $('#date').value = todayStr(); $('#time').value = nowTime(); };
-$('#date').addEventListener('change', renderToday);
+const setNow = () => { $('#date').value = todayStr(); $('#time').value = nowTime(); syncPain(); };
+$('#date').addEventListener('change', () => { renderToday(); syncPain(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { setNow(); renderToday(); load(); } });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 

@@ -9,6 +9,10 @@ A small phone web app for logging basal body temperature each morning and spotti
 - Calendar with past phases and predicted next shift and drop.
 - Cycle history table: length, shift day, high-phase length, temperature rise.
 - Mark a reading as "off" (late wake-up, bad night) to leave it out of the analysis.
+- Tap any past day in the calendar to set a shift or drop yourself (or rule one out). Your marks are saved in the Sheet and override the automatic rules; borderline detections are drawn hollow so you know which to check.
+- Log ovulation pain and which side; the app shows how it lines up with your temperature shifts.
+- Predictions are date ranges based on your own cycle-to-cycle variation, not a single guessed day.
+- Long-term trends: cycle, high-phase and low-phase length, and average temperatures per cycle.
 - Optional correction for readings taken an hour or more off your usual wake time.
 
 Shifts are detected with the standard 3-over-6 rule plus the usual exceptions (one spike in the baseline ignored, gaps in readings allowed, a 4th reading to confirm a slow rise). Drops are counted when temperatures fall back to the coverline, or well below the high phase's own average, for more than one reading.
@@ -17,7 +21,7 @@ Shifts are detected with the standard 3-over-6 rule plus the usual exceptions (o
 
 ### 1. Google Sheet and Apps Script
 
-1. Create a Google Sheet with headers in row 1: `Timestamp`, `BBT`, `Notes`. Existing data in that layout works as is.
+1. Create a Google Sheet with headers in row 1: `Timestamp`, `BBT`, `Notes`, `Marks`, `Ov pain`. Existing data works as is; the script finds the columns by name, so their order doesn't matter.
 2. Open **Extensions → Apps Script**, replace the contents of `Code.gs` with the [`Code.gs`](Code.gs) from this repository, and save.
 3. Click the gear icon (**Project Settings**) → **Script properties** → **Add script property**. Name it `TOKEN` and set its value to a long passphrase only you know.
 4. Click **Deploy → New deployment**, choose **Web app**, set **Execute as: Me** and **Who has access: Anyone**, then deploy and authorize. Copy the URL that ends in `/exec`.

@@ -48,31 +48,71 @@
   :root{
     --bg:#f5f4fb;--card:#ffffff;--field:#eeedf8;--border:#d9d6ee;--text:#1f1d33;--muted:#68657f;--faint:rgba(104,101,127,.2);
     --accent:#5a3fd1;--on-accent:#ffffff;--line:#4b34c4;--high:rgba(90,63,209,.09);--hi2:rgba(90,63,209,.22);--grid:rgba(0,0,0,.06);
-    --shift:#e08a00;--drop:#1f86c9;--jump:#2e9e6a;--pain:#d6457a
+    --shift:#e08a00;--drop:#1f86c9;--jump:#2e9e6a;--pain:#d6457a;--err:#b4361f;
+    --round:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,sans-serif;
+    --dawn:linear-gradient(172deg,#e6e0ff 0%,#efe9fb 52%,#fbe6df 100%);--chip:rgba(255,255,255,.62);--chip-line:rgba(90,63,209,.14)
   }
   @media (prefers-color-scheme: dark){
     :root{
       --bg:#121220;--card:#1c1b2e;--field:#26253c;--border:#36345a;--text:#e9e8f7;--muted:#9c99b8;--faint:rgba(156,153,184,.2);
       --accent:#8578f2;--on-accent:#12121f;--line:#9b8ff7;--high:rgba(133,120,242,.13);--hi2:rgba(133,120,242,.32);--grid:rgba(255,255,255,.06);
-      --shift:#f5a524;--drop:#5bb6f0;--jump:#4cc38a;--pain:#f07aa6
+      --shift:#f5a524;--drop:#5bb6f0;--jump:#4cc38a;--pain:#f07aa6;--err:#ff8f73;
+      --dawn:linear-gradient(172deg,#1f1946 0%,#2a2158 50%,#4b2f5c 100%);--chip:rgba(255,255,255,.08);--chip-line:rgba(255,255,255,.1)
     }
   }
   *{box-sizing:border-box}
+  [hidden]{display:none!important}
   body{margin:0;background:var(--bg);color:var(--text);font:16px/1.45 -apple-system,system-ui,sans-serif;
        padding:calc(env(safe-area-inset-top) + 12px) 14px calc(env(safe-area-inset-bottom) + 24px);max-width:720px;margin-inline:auto}
-  h1{font-size:20px;margin:4px 2px 12px;display:flex;justify-content:space-between;align-items:center}
+  .top{display:flex;justify-content:space-between;align-items:center;margin:2px 2px 12px}
+  .top p{margin:0;font:650 17px/1.2 var(--round)}
+  .hero{background:var(--dawn);border-radius:24px;padding:18px 18px 16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(40,30,110,.08)}
+  .prompt{margin:0;font:600 15px/1.3 var(--round);color:var(--muted)}
+  .tempRow,.logged{display:flex;align-items:baseline;gap:6px;margin:2px 0 14px}
+  .big,#temp{font:700 68px/1.05 var(--round);letter-spacing:-.02em;font-variant-numeric:tabular-nums;color:var(--text)}
+  #temp{flex:0 1 auto;width:3.1em;min-width:0;background:transparent;border:0;padding:0;border-radius:0;outline:none;-moz-appearance:textfield}
+  #temp::-webkit-outer-spin-button,#temp::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  #temp:focus-visible{outline:none}
+  .tempRow:focus-within{box-shadow:inset 0 -2px 0 var(--accent)}
+  #temp::placeholder{color:var(--faint)}
+  .unitBig{font:600 28px var(--round);color:var(--muted)}
+  .logged{flex-wrap:wrap}
+  .logged .sub{flex-basis:100%;margin:2px 0 0;font-size:14px;color:var(--muted)}
+  .link{background:none;color:var(--accent);padding:0;font-weight:600;font-size:14px;border-radius:0}
+  .hero .seg{margin:6px 0 0}
+  .hero .seg button{background:var(--chip);color:var(--text);border:1px solid var(--chip-line);padding:8px 14px}
+  .hero .seg.pain button.on{border-color:transparent}
+  .seg.pain button[data-p=""].on{background:var(--hi2);color:var(--text)}
+  .hero input:not(#temp){background:var(--chip);border-color:var(--chip-line)}
+  #saveBtn{width:100%;margin-top:16px;padding:15px;border-radius:14px;font:650 17px var(--round)}
+  .msg{margin:10px 0 0;font-size:14px;color:var(--muted)}
+  .msg:empty{display:none}
+  .msg.err{color:var(--err)}
+  .more{margin-top:12px}
+  .more summary{list-style:none;cursor:pointer;font-size:14px;color:var(--muted)}
+  .more summary::-webkit-details-marker{display:none}
+  .more summary b{color:var(--accent);font-weight:600}
+  .phaseRow{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .phase{margin:0;font:700 22px/1.2 var(--round)}
+  .cday{margin:0;font:600 15px var(--round);color:var(--muted);white-space:nowrap}
+  .track{position:relative;height:10px;border-radius:5px;background:var(--field);margin:16px 0 6px}
+  .track .hs{position:absolute;top:0;bottom:0;border-radius:5px;background:var(--hi2)}
+  .track .hs.pr{background:var(--high)}
+  .track .win{position:absolute;top:-4px;bottom:-4px;border:1.5px dashed var(--shift);border-radius:8px}
+  .track .now{position:absolute;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 3px var(--card)}
+  .trackLbl{display:flex;justify-content:space-between;font-size:12px;color:var(--muted)}
+  .pred{margin:12px 0 0}
+  .note{margin:6px 0 0;font-size:13px;color:var(--muted)}
   h2{font-size:15px;color:var(--muted);font-weight:600;margin:0 0 10px}
   .card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(40,30,110,.08)}
   .row{display:flex;gap:8px;align-items:center;margin-top:8px}
   input,select{font:inherit;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:10px;padding:10px;min-width:0}
-  #temp{flex:1;font-size:42px;font-weight:650;background:transparent;border:none;padding:0;outline:none}
-  #unitLbl{font-size:24px;color:var(--muted)}
   #date,#time,#note{flex:1}
   .check{display:flex;gap:10px;align-items:center;font-size:14px;color:var(--muted);margin-top:10px}
   .check input{width:20px;height:20px;flex:0 0 auto;accent-color:var(--accent)}
   button{font:inherit;border:0;border-radius:12px;padding:12px 16px;background:var(--accent);color:var(--on-accent);font-weight:650}
-  button:disabled{opacity:.5}
-  #saveBtn{width:100%;margin-top:12px}
+  button:disabled{opacity:.45}
+  button:focus-visible,summary:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   .icon{background:transparent;color:var(--muted);font-size:22px;padding:4px 8px}
   .muted{color:var(--muted);font-size:14px;margin:8px 0 0}
   #status{font-size:15px}
@@ -121,19 +161,27 @@
 </style>
 </head>
 <body>
-  <h1>Basal temp <button class="icon" id="gear" aria-label="Settings">⚙︎</button></h1>
+  <header class="top"><p id="todayLbl"></p><button class="icon" id="gear" aria-label="Settings">⚙︎</button></header>
 
-  <section class="card">
+  <section class="hero" id="hero">
     <form id="entry" autocomplete="off">
-      <div class="row" style="margin-top:0"><input id="temp" type="number" inputmode="decimal" step="0.01" placeholder="97.40"><span id="unitLbl">°F</span></div>
-      <div class="row"><input id="date" type="date"><input id="time" type="time"></div>
-      <div class="row"><input id="note" placeholder="Note (optional)"></div>
-      <p class="muted" style="margin-top:12px">Ovulation pain</p>
-      <div class="seg pain" id="painSeg" style="margin:6px 0 0"><button type="button" data-p="">None</button><button type="button" data-p="L">Left</button><button type="button" data-p="R">Right</button><button type="button" data-p="both">Both</button></div>
-      <label class="check"><input type="checkbox" id="off"> Off reading — leave it out of the analysis</label>
+      <label class="prompt" for="temp" id="prompt">This morning’s temperature</label>
+      <div class="logged" id="logged" hidden>
+        <span class="big" id="loggedVal"></span><span class="unitBig" id="loggedUnit">°F</span>
+        <p class="sub"><span id="loggedWhen"></span> <button type="button" class="link" id="editBtn">Change</button></p>
+      </div>
+      <div class="tempRow" id="tempRow"><input id="temp" type="number" inputmode="decimal" step="0.01" placeholder="97.40"><span class="unitBig" id="unitLbl">°F</span></div>
+      <p class="prompt">Ovulation pain</p>
+      <div class="seg pain" id="painSeg"><button type="button" data-p="">None</button><button type="button" data-p="L">Left</button><button type="button" data-p="R">Right</button><button type="button" data-p="both">Both</button></div>
       <button id="saveBtn" type="submit">Save</button>
-      <p id="hint" class="muted"></p>
-      <p id="msg" class="muted"></p>
+      <p id="msg" class="msg" role="status"></p>
+      <p id="hint" class="msg"></p>
+      <details class="more" id="more">
+        <summary id="whenSum"></summary>
+        <div class="row"><input id="date" type="date"><input id="time" type="time"></div>
+        <div class="row"><input id="note" placeholder="Note (optional)"></div>
+        <label class="check"><input type="checkbox" id="off"> Off reading: leave it out of the analysis</label>
+      </details>
     </form>
   </section>
 
@@ -225,7 +273,7 @@
     </form>
   </dialog>
 
-  <p class="muted" style="text-align:center">BBT · version 2026-10-30c</p>
+  <p class="muted" style="text-align:center">BBT · version 2026-10-30d</p>
 
 <script>
 const DEFAULT_URL = '';   // set your Apps Script URL in Settings; it stays on your phone only
@@ -266,7 +314,7 @@ const hm = m => { m = Math.round(Math.abs(m)); const h = Math.floor(m / 60), r =
 const fmtClock = m => new Date(2000, 0, 1, Math.floor(m / 60), m % 60).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
 const isOff = r => /^x(\s|$)/i.test((r.note || '').trim());
 const cleanNote = n => (n || '').trim().replace(/^x(\s|$)/i, '').trim();
-const msg = t => { $('#msg').textContent = t; };
+const msg = (t, err) => { $('#msg').textContent = t; $('#msg').classList.toggle('err', !!err); };
 
 // ---------- analysis ----------
 function analyze(cfg) {
@@ -441,45 +489,62 @@ const PAIN = { L: 'left', R: 'right', both: 'both sides' }, PAIN_SHORT = { L: 'L
 // ---------- rendering ----------
 function renderStatus(A, P) {
   const el = $('#status');
-  if (A.V.length < 9) { el.textContent = 'Log at least 9 days to start detecting shifts.'; return; }
+  if (A.V.length < 9) { el.innerHTML = '<p class="phase">Getting started</p><p class="pred">Log at least 9 mornings and the app will start finding your shifts.</p>'; return; }
   if (A.phase === 'stale') {
-    el.textContent = `No readings since ${long(A.V[A.V.length - 1].date)} — detection picks back up after a week or so of new readings.`;
+    el.innerHTML = `<p class="phase">Paused</p><p class="pred">No readings since ${long(A.V[A.V.length - 1].date)}. Detection picks back up after about a week of new readings.</p>`;
     return;
   }
-  const today = todayStr(), p = [], last = rows[rows.length - 1];
+  const today = todayStr(), last = rows[rows.length - 1], dr = A.lastDrop, lines = [], notes = [];
+  const cday = dr ? dayDiff(dr.date, today) + 1 : null;
+  let title, sub = cday ? `Cycle day ${cday}` : '';
   if (A.phase === 'high') {
     const s = A.curShift, day = dayDiff(s.date, today) + 1;
-    p.push(`<b>High phase</b> · day ${day} since the shift on ${long(s.date)} (ovulation ≈ ${long(s.ov)}).`);
-    if (s.weak) p.push(`<span class="muted">This shift is a weak detection — tap ${short(s.date)} in the calendar to confirm or move it.</span>`);
-    if (P.drop) p.push(`Drop likely <b>${fmtWin(P.drop)}</b>${P.drop.from !== P.drop.to ? ` (most often around ${long(P.drop.mid)})` : ''}.`);
-    else if (A.medHigh && day > A.medHigh) p.push(`This high phase is running longer than your usual ~${A.medHigh} days.`);
-    if (A.V[A.V.length - 1].t <= s.cl) p.push(`Latest reading is at/below the coverline (${fmtT(s.cl)}°) — a drop may be starting.`);
+    title = 'High phase';
+    lines.push(`Shift on ${long(s.date)}, so ovulation was around ${long(s.ov)}.`);
+    if (P.drop) lines.push(`Drop likely <b>${fmtWin(P.drop)}</b>${P.drop.from !== P.drop.to ? `, most often around ${long(P.drop.mid)}` : ''}.`);
+    else if (A.medHigh && day > A.medHigh) lines.push(`Day ${day} of the high phase, longer than your usual ${A.medHigh}.`);
+    if (A.V[A.V.length - 1].t <= s.cl) lines.push(`The latest reading is at or below the coverline (${fmtT(s.cl)}°), so a drop may be starting.`);
+    if (s.weak) notes.push(`This shift is a weak detection. Tap ${short(s.date)} in the calendar to confirm or move it.`);
   } else {
-    const dr = A.lastDrop;
-    if (dr) {
-      const day = dayDiff(dr.date, today) + 1, expect = A.medLow != null ? A.medLow + 1 : null;
-      p.push(`<b>Low phase</b> · cycle day ${day} (drop on ${long(dr.date)}).`);
-      if (dr.weak) p.push(`<span class="muted">That drop is a weak detection — tap ${short(dr.date)} in the calendar to confirm or move it.</span>`);
-      if (P.shift) p.push(`Shift likely <b>${fmtWin(P.shift)}</b>${P.shift.from !== P.shift.to ? ` (most often around ${long(P.shift.mid)})` : ''}.`);
-      if (!A.pending && day > (expect ? expect + 7 : 30)) {
-        p.push(`No clear shift detected yet${expect ? ` — you usually shift around cycle day ${expect}` : ''}.`);
-      }
-    } else p.push('<b>Low phase</b>.');
-    if (A.pending) p.push(`Last ${A.pending === 1 ? 'reading is' : '2 readings are'} above the prior 6 — possible shift forming (needs 3 to confirm).`);
+    title = 'Low phase';
+    if (P.shift) lines.push(`Shift likely <b>${fmtWin(P.shift)}</b>${P.shift.from !== P.shift.to ? `, most often around ${long(P.shift.mid)}` : ''}.`);
+    const expect = A.medLow != null ? A.medLow + 1 : null;
+    if (cday && !A.pending && cday > (expect ? expect + 7 : 30)) lines.push(`No clear shift yet${expect ? `; you usually shift around cycle day ${expect}` : ''}.`);
+    if (A.pending) lines.push(`The last ${A.pending === 1 ? 'reading is' : '2 readings are'} above the 6 before, so a shift may be forming. It takes 3 to confirm.`);
+    if (dr && dr.weak) notes.push(`The last drop is a weak detection. Tap ${short(dr.date)} in the calendar to confirm or move it.`);
   }
   if (last && last.date === today) {
-    if (isOff(last)) p.push(`<span class="muted">Today's reading is marked off and left out.</span>`);
+    if (isOff(last)) notes.push('Today’s reading is marked off and left out.');
     else {
       const o = A.offBy(last);
-      if (Math.abs(o) >= 60) p.push(`<span class="muted">Today's reading was ${hm(o)} ${o > 0 ? 'later' : 'earlier'} than your usual ${fmtClock(A.wake)}${getCfg().adjust ? ' (adjusted)' : ''}.</span>`);
+      if (Math.abs(o) >= 60) notes.push(`Today’s reading was taken ${hm(o)} ${o > 0 ? 'later' : 'earlier'} than your usual ${fmtClock(A.wake)}${getCfg().adjust ? ' and adjusted' : ''}.`);
     }
   }
-   if (A.medCycle) {
+  if (A.medCycle) {
     const exp = getCfg().expect, diff = exp ? A.medCycle - exp : null;
-    const vs = !exp ? '' : diff === 0 ? ` (right on the ${exp} you expected)` : ` (${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ${diff > 0 ? 'longer' : 'shorter'} than the ${exp} you expected)`;
-    p.push(`<span class="muted">Measured typical cycle: ${A.medCycle} days${vs} · unusual change for you: ±${fmtT(A.jumpThr)}°.</span>`);
+    const vs = !exp ? '' : diff === 0 ? `, right on the ${exp} you expected` : `, ${Math.abs(diff)} day${Math.abs(diff) === 1 ? '' : 's'} ${diff > 0 ? 'longer' : 'shorter'} than the ${exp} you expected`;
+    notes.push(`Your typical cycle is ${A.medCycle} days${vs}.`);
   }
-   el.innerHTML = p.join(' ');
+
+  // where you are in the cycle: drop → today → likely shift → likely next drop
+  let track = '';
+  if (dr && A.medCycle) {
+    const dayOf = ds => dayDiff(dr.date, ds) + 1;
+    const end = Math.max(A.medCycle, P.drop ? dayOf(P.drop.mid) : 0, cday + 1);
+    const at = n => Math.min(100, Math.max(0, (n - 1) / (end - 1) * 100)).toFixed(1) + '%';
+    let parts = '';
+    if (A.phase === 'high') parts += `<span class="hs" style="left:${at(dayOf(A.curShift.date))};right:${'calc(100% - ' + at(P.drop ? dayOf(P.drop.mid) : end) + ')'}"></span>`;
+    else if (P.shift) {
+      parts += `<span class="hs pr" style="left:${at(dayOf(P.shift.mid))};right:0"></span>`;
+      parts += `<span class="win" style="left:${at(dayOf(P.shift.from))};right:calc(100% - ${at(dayOf(P.shift.to))})"></span>`;
+    }
+    parts += `<span class="now" style="left:${at(cday)}"></span>`;
+    const md = ds => parse(ds).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    track = `<div class="track" aria-hidden="true">${parts}</div>
+      <div class="trackLbl"><span>Drop ${md(dr.date)}</span><span>${P.drop ? 'Next drop ~' + md(P.drop.mid) : 'Day ' + end}</span></div>`;
+  }
+  el.innerHTML = `<div class="phaseRow"><p class="phase">${title}</p><p class="cday">${sub}</p></div>${track}
+    ${lines.length ? `<p class="pred">${lines.join(' ')}</p>` : ''}${notes.map(n => `<p class="note">${n}</p>`).join('')}`;
 }
 
 function renderChart(A) {
@@ -741,10 +806,30 @@ function renderHistory(A) {
 }
 
 function renderToday() {
-  const d = $('#date').value || todayStr(), ex = rows.find(r => r.date === d);
-  $('#hint').textContent = ex
-    ? `Logged ${fmtT(ex.temp)}° for ${d === todayStr() ? 'today' : long(d)}${isOff(ex) ? ' (marked off)' : ''} — saving again overwrites it.`
-    : (d === todayStr() ? 'Not logged yet today.' : '');
+  const today = todayStr(), d = $('#date').value || today, isToday = d === today, ex = rows.find(r => r.date === d);
+  const showLogged = !!ex && !$('#hero').classList.contains('editing');
+  $('#todayLbl').textContent = parse(today).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  $('#prompt').textContent = isToday ? 'This morning’s temperature' : `Temperature for ${long(d)}`;
+  $('#logged').hidden = !showLogged; $('#tempRow').hidden = showLogged;
+  if (ex) {
+    const m = mins(ex.time);
+    $('#loggedVal').textContent = fmtT(ex.temp);
+    $('#loggedWhen').textContent = `Logged${m != null ? ' at ' + fmtClock(m) : ''}${isOff(ex) ? ', marked off' : ''}.`;
+  }
+  $('#hint').textContent = '';
+  const t = mins($('#time').value), when = isToday ? (t != null ? `Today, ${fmtClock(t)}` : 'Today') : `${long(d)}${t != null ? ', ' + fmtClock(t) : ''}`;
+  $('#whenSum').innerHTML = `${when} · <b>Edit time, add a note</b>`;
+  updateSave();
+}
+function updateSave() {
+  const d = $('#date').value || todayStr(), ex = rows.find(r => r.date === d), btn = $('#saveBtn');
+  const t = parseFloat($('#temp').value), pain = segVal('#painSeg'), painChanged = pain !== ((ev[d] && ev[d].pain) || '');
+  const showLogged = !!ex && !$('#hero').classList.contains('editing');
+  btn.hidden = false; btn.disabled = false;
+  if (isFinite(t)) btn.textContent = `Save ${fmtT(t)}°`;
+  else if (painChanged) btn.textContent = pain ? 'Save ovulation pain' : 'Clear ovulation pain';
+  else if (showLogged) btn.hidden = true;
+  else { btn.textContent = 'Save'; btn.disabled = true; }
 }
 
 function render() {
@@ -772,7 +857,7 @@ async function load() {
     ev = newEv;
     store.set('bbt_rows', rows); store.set('bbt_ev', ev);
     render();
-  } catch (e) { msg('Couldn’t load: ' + e.message); }
+  } catch (e) { msg(e.message === 'unauthorized' ? 'Couldn’t load your readings: the token in Settings (⚙︎) doesn’t match the Sheet script. Showing the copy saved on this phone.' : `Couldn’t load your readings (${e.message}). Showing the copy saved on this phone.`, true); }
 }
 
 async function post(body) {
@@ -788,8 +873,16 @@ const setEv = (date, patch) => {
 };
 const segVal = sel => { const b = document.querySelector(sel + ' button.on'); return b ? b.dataset.p : ''; };
 const setSeg = (sel, v) => document.querySelectorAll(sel + ' button').forEach(b => b.classList.toggle('on', b.dataset.p === (v || '')));
-['#painSeg', '#dayPain'].forEach(sel => document.querySelectorAll(sel + ' button').forEach(b => b.addEventListener('click', () => setSeg(sel, b.dataset.p))));
-const syncPain = () => { const d = $('#date').value || todayStr(); setSeg('#painSeg', (ev[d] && ev[d].pain) || ''); };
+['#painSeg', '#dayPain'].forEach(sel => document.querySelectorAll(sel + ' button').forEach(b => b.addEventListener('click', () => { setSeg(sel, b.dataset.p); if (sel === '#painSeg') updateSave(); })));
+const syncPain = () => { const d = $('#date').value || todayStr(); setSeg('#painSeg', (ev[d] && ev[d].pain) || ''); updateSave(); };
+$('#temp').addEventListener('input', updateSave);
+$('#time').addEventListener('change', renderToday);
+$('#editBtn').addEventListener('click', () => {
+  const ex = rows.find(r => r.date === ($('#date').value || todayStr()));
+  $('#hero').classList.add('editing'); renderToday();
+  if (ex) $('#temp').placeholder = fmtT(ex.temp);
+  $('#temp').focus();
+});
 
 $('#entry').addEventListener('submit', async e => {
   e.preventDefault();
@@ -798,7 +891,7 @@ $('#entry').addEventListener('submit', async e => {
   const pain = segVal('#painSeg'), painChanged = pain !== ((ev[date] && ev[date].pain) || '');
   let note = $('#note').value.trim();
   if ($('#off').checked) note = ('x ' + note).trim();
-  if (!isFinite(temp) && !painChanged) { msg('Enter a temperature.'); return; }
+  if (!isFinite(temp) && !painChanged) { msg('Type a temperature first.'); return; }
   const [lo, hi] = unit === 'C' ? [34.5, 39] : [94, 102];
   if (isFinite(temp) && (temp < lo || temp > hi) && !confirm(`${temp}° looks unusual — save anyway?`)) return;
   const btn = $('#saveBtn'); btn.disabled = true; msg('Saving…');
@@ -813,10 +906,10 @@ $('#entry').addEventListener('submit', async e => {
       store.set('bbt_rows', rows);
     }
     setEv(date, { pain });
-    $('#temp').value = ''; $('#note').value = ''; $('#off').checked = false; $('#temp').blur();
-    msg(isFinite(temp) ? 'Saved ✓' : 'Ovulation pain saved ✓'); render(); syncPain();
-  } catch (err) { msg('Couldn’t save: ' + err.message); }
-  finally { btn.disabled = false; }
+    $('#temp').value = ''; $('#note').value = ''; $('#off').checked = false; $('#temp').blur(); $('#more').open = false;
+    msg(isFinite(temp) ? 'Saved' : 'Ovulation pain saved'); render(); syncPain();
+  } catch (err) { msg(err.message === 'unauthorized' ? 'Not saved: the token in Settings (⚙︎) doesn’t match the Sheet script.' : 'Not saved: ' + err.message, true); }
+  finally { btn.disabled = false; $('#hero').classList.remove('editing'); renderToday(); }
 });
 
 // ---------- tap a calendar day: set a shift/drop yourself, log ovulation pain ----------
@@ -889,12 +982,12 @@ segGroup('#ovSeg', 'n', () => ovN, v => { ovN = v === 'all' ? 'all' : +v; store.
 segGroup('#alignSeg', 'a', () => ovAlign, v => { ovAlign = v; store.set('bbt_ovAlign', ovAlign); });
 
 const setNow = () => { $('#date').value = todayStr(); $('#time').value = nowTime(); syncPain(); };
-$('#date').addEventListener('change', () => { renderToday(); syncPain(); });
+$('#date').addEventListener('change', () => { $('#hero').classList.remove('editing'); renderToday(); syncPain(); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden) { setNow(); renderToday(); load(); } });
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', render);
 
 setNow();
-$('#unitLbl').textContent = '°' + getCfg().unit;
+$('#unitLbl').textContent = $('#loggedUnit').textContent = '°' + getCfg().unit;
 render();
 load();
 </script>
